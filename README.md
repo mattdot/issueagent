@@ -16,4 +16,13 @@ This repository includes a devcontainer configuration for a consistent developme
 3. Click "Reopen in Container" when prompted, or use Command Palette: `Dev Containers: Reopen in Container`
 4. The container will build and install all required tools automatically
 
-The devcontainer automatically verifies the installation by running `dotnet --version` and `uv --version`, and installs the specify-cli tool from the GitHub spec-kit repository after creation.
+The devcontainer automatically verifies the installation by running `dotnet --version` and `uv --version`, and installs the specify-cli tool from the GitHub spec-kit repository and the NuGet MCP Server tool after creation.
+
+## GitHub Copilot MCP Servers
+
+This repository is configured to use Model Context Protocol (MCP) servers with GitHub Copilot, providing enhanced capabilities:
+
+- **MS Docs MCP Server** - Provides access to Microsoft documentation
+- **NuGet MCP Server** - Provides access to NuGet package information
+
+The MCP servers are configured in `.github/copilot-mcp.json` and are automatically available when using GitHub Copilot in this repository.
