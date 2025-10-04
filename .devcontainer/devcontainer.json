@@ -13,6 +13,6 @@
 			]
 		}
 	},
-	"postCreateCommand": "dotnet --version && uv --version",
+	"postCreateCommand": "dotnet --version && uv --version && uv tool install specify-cli --from git+https://github.com/github/spec-kit.git",
 	"remoteUser": "vscode"
 }
