@@ -31,43 +31,43 @@
 ```
 
 ## Phase 3.1: Setup & Tooling
-- [ ] T001 Scaffold `.NET` solution and projects (`IssueAgent.sln`, `src/IssueAgent.Action/IssueAgent.Action.csproj`, `src/IssueAgent.Agent/IssueAgent.Agent.csproj`, `src/IssueAgent.Shared/IssueAgent.Shared.csproj`, test projects under `tests/`) per plan structure.
-- [ ] T002 Establish repository build configuration in `Directory.Build.props` and `Directory.Packages.props` targeting net8.0, enabling trimming, single-file publish, and treating warnings as errors.
-- [ ] T003 Add baseline package references (Microsoft Agent Framework SDK, Octokit.GraphQL, xUnit, FluentAssertions) across `src/IssueAgent.Agent/*.csproj`, `src/IssueAgent.Shared/*.csproj`, and `tests/*/*.csproj` to unlock test compilation.
+- [X] T001 Scaffold `.NET` solution and projects (`IssueAgent.sln`, `src/IssueAgent.Action/IssueAgent.Action.csproj`, `src/IssueAgent.Agent/IssueAgent.Agent.csproj`, `src/IssueAgent.Shared/IssueAgent.Shared.csproj`, test projects under `tests/`) per plan structure.
+- [X] T002 Establish repository build configuration in `Directory.Build.props` and `Directory.Packages.props` targeting net8.0, enabling trimming, single-file publish, and treating warnings as errors.
+- [X] T003 Add baseline package references (Microsoft Agent Framework SDK, Octokit.GraphQL, xUnit, FluentAssertions) across `src/IssueAgent.Agent/*.csproj`, `src/IssueAgent.Shared/*.csproj`, and `tests/*/*.csproj` to unlock test compilation.
 
 ## Phase 3.2: Tests First (write, watch them fail) ⚠️
-- [ ] T004 [P] Create failing GraphQL contract tests from `contracts/issue-context-query.tests.md` in `tests/IssueAgent.ContractTests/GraphQL/IssueContextQueryTests.cs`.
-- [ ] T005 Author failing integration tests exercising success, permission-denied, missing-issue, and startup-metrics scenarios in `tests/IssueAgent.IntegrationTests/GitHubGraphQL/IssueContextAgentFlowTests.cs`.
-- [ ] T006 [P] Add failing unit tests for `IssueContextResult` status transitions and validation in `tests/IssueAgent.UnitTests/Shared/IssueContextResultTests.cs`.
-- [ ] T007 [P] Add failing unit tests for `IssueSnapshot` field requirements and comment cap enforcement in `tests/IssueAgent.UnitTests/Shared/IssueSnapshotTests.cs`.
-- [ ] T008 [P] Add failing unit tests for `CommentSnapshot` body excerpt trimming and timestamp validation in `tests/IssueAgent.UnitTests/Shared/CommentSnapshotTests.cs`.
-- [ ] T009 [P] Add failing unit tests covering missing-token and insufficient-scope behavior in `tests/IssueAgent.UnitTests/Security/GitHubTokenGuardTests.cs`.
-- [ ] T010 [P] Add failing unit tests verifying log redaction for GraphQL payloads in `tests/IssueAgent.UnitTests/Logging/RedactionMiddlewareTests.cs`.
+- [X] T004 [P] Create failing GraphQL contract tests from `contracts/issue-context-query.tests.md` in `tests/IssueAgent.ContractTests/GraphQL/IssueContextQueryTests.cs`.
+- [X] T005 Author failing integration tests exercising success, permission-denied, missing-issue, and startup-metrics scenarios in `tests/IssueAgent.IntegrationTests/GitHubGraphQL/IssueContextAgentFlowTests.cs`.
+- [X] T006 [P] Add failing unit tests for `IssueContextResult` status transitions and validation in `tests/IssueAgent.UnitTests/Shared/IssueContextResultTests.cs`.
+- [X] T007 [P] Add failing unit tests for `IssueSnapshot` field requirements and comment cap enforcement in `tests/IssueAgent.UnitTests/Shared/IssueSnapshotTests.cs`.
+- [X] T008 [P] Add failing unit tests for `CommentSnapshot` body excerpt trimming and timestamp validation in `tests/IssueAgent.UnitTests/Shared/CommentSnapshotTests.cs`.
+- [X] T009 [P] Add failing unit tests covering missing-token and insufficient-scope behavior in `tests/IssueAgent.UnitTests/Security/GitHubTokenGuardTests.cs`.
+- [X] T010 [P] Add failing unit tests verifying log redaction for GraphQL payloads in `tests/IssueAgent.UnitTests/Logging/RedactionMiddlewareTests.cs`.
 
 ## Phase 3.3: Core Implementation (make the tests pass)
-- [ ] T011 [P] Implement `CommentSnapshot` record with validation helpers in `src/IssueAgent.Shared/Models/CommentSnapshot.cs`.
-- [ ] T012 [P] Implement `IssueSnapshot` record composing recent comments in `src/IssueAgent.Shared/Models/IssueSnapshot.cs`.
-- [ ] T013 [P] Implement `IssueContextResult` record with status factory helpers in `src/IssueAgent.Shared/Models/IssueContextResult.cs`.
-- [ ] T014 Implement GitHub token guard enforcing least-privilege guidance in `src/IssueAgent.Agent/Security/GitHubTokenGuard.cs`.
-- [ ] T015 [P] Implement logging redaction middleware to sanitize GraphQL fields in `src/IssueAgent.Agent/Logging/RedactionMiddleware.cs`.
-- [ ] T016 [P] Implement startup metrics recorder emitting `StartupDurationMs` in `src/IssueAgent.Agent/Instrumentation/StartupMetricsRecorder.cs`.
-- [ ] T017 Implement Octokit GraphQL query executor honoring contract in `src/IssueAgent.Agent/GraphQL/IssueContextQueryExecutor.cs`.
-- [ ] T018 Implement issue-context agent orchestrator producing `IssueContextResult` in `src/IssueAgent.Agent/Runtime/IssueContextAgent.cs`.
-- [ ] T019 Implement Microsoft Agent Framework bootstrap wiring services in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs`.
-- [ ] T020 Implement Docker entrypoint host that loads event payload and invokes the agent in `src/IssueAgent.Action/Program.cs` (with supporting `Scripts/entrypoint.sh`).
-- [ ] T021 Define GitHub Action metadata with inputs/permissions in `src/IssueAgent.Action/action.yml`.
-- [ ] T022 Author multi-stage publish recipe meeting <150 MB target in `containers/action/Dockerfile`.
-- [ ] T023 Create publish automation script for container/image versioning in `src/IssueAgent.Action/Scripts/publish.sh`.
+- [X] T011 [P] Implement `CommentSnapshot` record with validation helpers in `src/IssueAgent.Shared/Models/CommentSnapshot.cs`.
+- [X] T012 [P] Implement `IssueSnapshot` record composing recent comments in `src/IssueAgent.Shared/Models/IssueSnapshot.cs`.
+- [X] T013 [P] Implement `IssueContextResult` record with status factory helpers in `src/IssueAgent.Shared/Models/IssueContextResult.cs`.
+- [X] T014 Implement GitHub token guard enforcing least-privilege guidance in `src/IssueAgent.Agent/Security/GitHubTokenGuard.cs`.
+- [X] T015 [P] Implement logging redaction middleware to sanitize GraphQL fields in `src/IssueAgent.Agent/Logging/RedactionMiddleware.cs`.
+- [X] T016 [P] Implement startup metrics recorder emitting `StartupDurationMs` in `src/IssueAgent.Agent/Instrumentation/StartupMetricsRecorder.cs`.
+- [X] T017 Implement Octokit GraphQL query executor honoring contract in `src/IssueAgent.Agent/GraphQL/IssueContextQueryExecutor.cs`.
+- [X] T018 Implement issue-context agent orchestrator producing `IssueContextResult` in `src/IssueAgent.Agent/Runtime/IssueContextAgent.cs`.
+- [X] T019 Implement Microsoft Agent Framework bootstrap wiring services in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs`.
+- [X] T020 Implement Docker entrypoint host that loads event payload and invokes the agent in `src/IssueAgent.Action/Program.cs` (with supporting `Scripts/entrypoint.sh`).
+- [X] T021 Define GitHub Action metadata with inputs/permissions in `action.yml`.
+- [X] T022 Author multi-stage publish recipe meeting <150 MB target in `containers/action/Dockerfile`.
+- [X] T023 Create publish automation script for container/image versioning in `src/IssueAgent.Action/Scripts/publish.sh`.
 
 ## Phase 3.4: Integration & Tooling
-- [ ] T024 Implement reusable GraphQL test harness (fake server + fixtures) in `tests/IssueAgent.IntegrationTests/GitHubGraphQL/FakeGitHubGraphQLServer.cs`.
-- [ ] T025 Provide integration test fixture wiring agent dependencies in `tests/IssueAgent.IntegrationTests/GitHubGraphQL/IssueContextAgentFixture.cs`.
-- [ ] T026 Add CI workflow to build, test, and publish container image in `.github/workflows/ci.yml`.
+- [X] T024 Implement reusable GraphQL test harness (fake server + fixtures) in `tests/IssueAgent.IntegrationTests/GitHubGraphQL/FakeGitHubGraphQLServer.cs`.
+- [X] T025 Provide integration test fixture wiring agent dependencies in `tests/IssueAgent.IntegrationTests/GitHubGraphQL/IssueContextAgentFixture.cs`.
+- [X] T026 Add CI workflow to build, test, and publish container image in `.github/workflows/ci.yml`.
 
 ## Phase 3.5: Polish & Launch
-- [ ] T027 [P] Update top-level `README.md` with action usage, permissions guidance, and cold-start metrics expectations.
-- [ ] T028 [P] Add operations playbook documenting telemetry review and remediation steps in `docs/operations/issue-context-runbook.md`.
-- [ ] T029 [P] Draft release checklist covering security review, image size verification, and Marketplace notes in `docs/releases/issue-context-checklist.md`.
+- [X] T027 [P] Update top-level `README.md` with action usage, permissions guidance, and cold-start metrics expectations.
+- [X] T028 [P] Add operations playbook documenting telemetry review and remediation steps in `docs/operations/issue-context-runbook.md`.
+- [X] T029 [P] Draft release checklist covering security review, image size verification, and Marketplace notes in `docs/releases/issue-context-checklist.md`.
 
 ## Dependencies
 - T001 → T002 → T003 (solution scaffolding precedes dependency configuration).
