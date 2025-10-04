@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "msdocs": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-msdocs"
+      ]
+    },
+    "nuget": {
+      "command": "dotnet",
+      "args": [
+        "tool",
+        "run",
+        "nuget-mcp-server"
+      ]
+    }
+  }
+}
