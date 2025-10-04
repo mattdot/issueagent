@@ -2,7 +2,11 @@
 	"name": ".NET with uv/uvx",
 	"image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
 	"features": {
-		"ghcr.io/devcontainers-contrib/features/uv:1": {}
+		"ghcr.io/devcontainers-contrib/features/uv:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"moby": false
+		}
 	},
 	"customizations": {
 		"vscode": {
@@ -13,6 +17,9 @@
 			]
 		}
 	},
+	"mounts": [
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+	],
 	"postCreateCommand": "dotnet --version && uv --version && uv tool install specify-cli --from git+https://github.com/github/spec-kit.git && dotnet tool install --global NuGet.Mcp.Server",
 	"remoteUser": "vscode"
 }

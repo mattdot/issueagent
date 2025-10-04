@@ -5,6 +5,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0-alpine AS build
 
 WORKDIR /src
 
+RUN apk add --no-cache clang lld build-base
+
 # Copy solution and restore
 COPY Directory.Build.props Directory.Packages.props IssueAgent.sln ./
 COPY src ./src
