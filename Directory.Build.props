@@ -10,7 +10,6 @@
 
   <PropertyGroup Condition="'$(MSBuildProjectName)' == 'IssueAgent.Agent' or '$(MSBuildProjectName)' == 'IssueAgent.Action'">
     <SelfContained>true</SelfContained>
-    <PublishSingleFile>true</PublishSingleFile>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>full</TrimMode>
     <InvariantGlobalization>true</InvariantGlobalization>

@@ -19,7 +19,6 @@ RUN dotnet publish src/IssueAgent.Action/IssueAgent.Action.csproj \
     --self-contained true \
     -p:PublishAot=true \
     -p:PublishTrimmed=true \
-    -p:PublishSingleFile=true \
     -p:InvariantGlobalization=true \
     -p:StripSymbols=true \
     -o /app/publish
