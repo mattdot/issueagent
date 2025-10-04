@@ -27,7 +27,7 @@ This runbook describes how to triage and remediate incidents involving the Issue
 
 ### PermissionDenied
 - Confirm the workflow job grants `permissions: issues: read`.
-- If the organization enforces restricted tokens, coordinate with admins to allow the scope or supply a PAT through `github-token` input.
+- If the organization enforces restricted tokens, coordinate with admins to allow the scope or supply a PAT through `github_token` input.
 - Re-run the workflow once permissions are corrected.
 
 ### GraphQLFailure

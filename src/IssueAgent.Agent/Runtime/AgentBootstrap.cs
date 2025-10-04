@@ -76,7 +76,7 @@ public static class AgentBootstrap
         var token = ReadToken();
         if (string.IsNullOrWhiteSpace(token))
         {
-            throw new InvalidOperationException("GitHub token missing. Provide the 'github-token' input or set GITHUB_TOKEN.");
+            throw new InvalidOperationException("GitHub token missing. Provide the 'github_token' input or set GITHUB_TOKEN.");
         }
 
         var repository = RequireEnvironment("GITHUB_REPOSITORY", "Repository context not supplied (GITHUB_REPOSITORY).");
@@ -97,7 +97,7 @@ public static class AgentBootstrap
             ["eventName"] = eventName,
             ["runId"] = runId,
             ["commentsPageSize"] = commentsPageSize,
-            ["github-token"] = token
+            ["github_token"] = token
         };
 
         return new RuntimeEnvironment(token, request, metadata);
@@ -116,13 +116,38 @@ public static class AgentBootstrap
 
     private static string? ReadToken()
     {
-        var explicitToken = Environment.GetEnvironmentVariable("INPUT_GITHUB_TOKEN");
+    var explicitToken = ReadInputVariable("github_token");
         if (!string.IsNullOrWhiteSpace(explicitToken))
         {
             return explicitToken;
         }
 
         return Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+    }
+
+    private static string? ReadInputVariable(string inputName)
+    {
+        if (string.IsNullOrWhiteSpace(inputName))
+        {
+            return null;
+        }
+
+        var canonical = inputName.Trim().Replace(' ', '-').ToUpperInvariant();
+        var candidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            $"INPUT_{canonical}"
+        };
+
+        foreach (var key in candidates)
+        {
+            var value = Environment.GetEnvironmentVariable(key);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static int ParseIntEnvironment(string key, int fallback, int minValue, int maxValue)

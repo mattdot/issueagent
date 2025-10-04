@@ -51,7 +51,7 @@ Deliver a Marketplace-published GitHub Action that uses a prebuilt minimal Docke
 2. **Minimum Viable Delivery** – Delivery limited to issue-context retrieval, measurable via logged success/fail metrics. ✅
 3. **Performance-Ready Execution** – AOT publish, prebuilt container, monitor cold-start metrics; no additional dependencies that risk >3s. ✅ (monitor)
 4. **Human-Centered Agent Experience** – Log actionable guidance on failure; no conversational automation yet. ✅
-5. **Customizable Extensibility** – Document configurable inputs (`github-token`, future expansions) in README; default works out of the box. ✅
+5. **Customizable Extensibility** – Document configurable inputs (`github_token`, future expansions) in README; default works out of the box. ✅
 6. **C#/.NET + Microsoft Agent Framework Mandate** – Agent built on Microsoft Agent Framework targeting .NET 8 LTS. ✅
 
 *Result*: Initial Constitution Check PASS

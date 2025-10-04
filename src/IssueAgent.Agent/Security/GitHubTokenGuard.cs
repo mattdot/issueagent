@@ -6,7 +6,7 @@ namespace IssueAgent.Agent.Security;
 
 public class GitHubTokenGuard
 {
-    private const string Guidance = "Workflow must provide github-token input (uses: github.token).";
+    private const string Guidance = "Workflow must provide github_token input (uses: github.token).";
 
     public virtual Task EnsureTokenAsync(string? token, CancellationToken cancellationToken)
     {

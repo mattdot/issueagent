@@ -10,7 +10,8 @@ public static class RedactionMiddleware
         "authorization",
         "auth",
         "token",
-        "github-token",
+    "github-token",
+    "github_token",
         "access-token"
     };
 

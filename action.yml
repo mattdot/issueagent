@@ -7,10 +7,10 @@ branding:
   icon: "book-open"
   color: "blue"
 inputs:
-  github-token:
+  github_token:
     description: "GitHub token with issues:read permission. Defaults to the workflow token if not provided."
     required: false
-  comments-page-size:
+  comments_page_size:
     description: "Number of recent comments to capture (1-20)."
     required: false
     default: "5"
