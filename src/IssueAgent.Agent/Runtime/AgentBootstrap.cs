@@ -116,13 +116,39 @@ public static class AgentBootstrap
 
     private static string? ReadToken()
     {
-        var explicitToken = Environment.GetEnvironmentVariable("INPUT_GITHUB_TOKEN");
+        var explicitToken = ReadInputVariable("github-token");
         if (!string.IsNullOrWhiteSpace(explicitToken))
         {
             return explicitToken;
         }
 
         return Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+    }
+
+    private static string? ReadInputVariable(string inputName)
+    {
+        if (string.IsNullOrWhiteSpace(inputName))
+        {
+            return null;
+        }
+
+        var canonical = inputName.Trim().Replace(' ', '-').ToUpperInvariant();
+        var candidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            $"INPUT_{canonical}",
+            $"INPUT_{canonical.Replace('-', '_')}"
+        };
+
+        foreach (var key in candidates)
+        {
+            var value = Environment.GetEnvironmentVariable(key);
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static int ParseIntEnvironment(string key, int fallback, int minValue, int maxValue)

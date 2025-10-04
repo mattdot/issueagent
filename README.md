@@ -78,14 +78,6 @@ To use it:
 dotnet test
 	The devcontainer automatically verifies the installation by running `dotnet --version` and `uv --version`, and installs the specify-cli tool from the GitHub spec-kit repository and the NuGet MCP Server tool after creation.
 
-	## GitHub Copilot MCP Servers
-
-	This repository is configured to use Model Context Protocol (MCP) servers with GitHub Copilot, providing enhanced capabilities:
-
-	- **MS Docs MCP Server** – Provides access to Microsoft documentation.
-	- **NuGet MCP Server** – Provides access to NuGet package information.
-
-	The MCP servers are defined in `.github/copilot-mcp.json` and are automatically available when using GitHub Copilot in this repository.
 ```
 
 To build the Docker image locally:
@@ -132,5 +124,5 @@ This repository is configured to use Model Context Protocol (MCP) servers with G
 - **MS Docs MCP Server** - Provides access to Microsoft documentation
 - **NuGet MCP Server** - Provides access to NuGet package information
 
-The MCP servers are configured in `.github/copilot-mcp.json` and are automatically available when using GitHub Copilot in this repository.
+The MCP servers are configured in `.vscode/github-copilot/mcp.json` and are automatically available when using GitHub Copilot in this repository.
 >>>>>>> origin/main
