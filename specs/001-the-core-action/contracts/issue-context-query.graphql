@@ -1,0 +1,33 @@
+# GraphQL Contract — Issue Context Query
+# Purpose: Retrieve the issue and recent comments that triggered the workflow event.
+# Variables are populated using GitHub-provided environment variables and event payload fields.
+
+query IssueContextQuery($owner: String!, $name: String!, $issueNumber: Int!, $commentsPageSize: Int! = 5) {
+  repository(owner: $owner, name: $name) {
+    issue(number: $issueNumber) {
+      id
+      number
+      title
+      author {
+        login
+      }
+      comments(last: $commentsPageSize) {
+        totalCount
+        nodes {
+          id
+          author {
+            login
+          }
+          bodyText
+          createdAt
+        }
+      }
+    }
+  }
+}
+
+# Expected variable bindings (resolved within the action runtime):
+# owner → ${GITHUB_REPOSITORY%/*}
+# name → ${GITHUB_REPOSITORY#*/}
+# issueNumber → Derived from event payload (issue.number)
+# commentsPageSize → Constant 5 (configurable via future inputs)
