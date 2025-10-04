@@ -17,7 +17,7 @@ public class GitHubTokenGuardTests
         var act = async () => await guard.EnsureTokenAsync(null, CancellationToken.None);
 
         await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("*github-token*");
+            .WithMessage("*github_token*");
     }
 
     [Fact]

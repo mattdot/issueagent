@@ -14,36 +14,21 @@ public class AgentBootstrapTests
         throw new InvalidOperationException("ReadToken method not found.");
 
     [Fact]
-    public void ReadToken_PrefersHyphenatedInput()
+    public void ReadToken_PrefersExplicitInput()
     {
         using var scope = new EnvironmentVariableScope(
-            ("INPUT_GITHUB-TOKEN", "hyphen-token"),
-            ("INPUT_GITHUB_TOKEN", null),
-            ("GITHUB_TOKEN", null));
+            ("INPUT_GITHUB_TOKEN", "explicit-token"),
+            ("GITHUB_TOKEN", "gh-token"));
 
         var result = InvokeReadToken();
 
-        result.Should().Be("hyphen-token");
-    }
-
-    [Fact]
-    public void ReadToken_FallsBackToUnderscoreVariant()
-    {
-        using var scope = new EnvironmentVariableScope(
-            ("INPUT_GITHUB-TOKEN", null),
-            ("INPUT_GITHUB_TOKEN", "underscore-token"),
-            ("GITHUB_TOKEN", null));
-
-        var result = InvokeReadToken();
-
-        result.Should().Be("underscore-token");
+        result.Should().Be("explicit-token");
     }
 
     [Fact]
     public void ReadToken_FallsBackToGitHubToken()
     {
         using var scope = new EnvironmentVariableScope(
-            ("INPUT_GITHUB-TOKEN", null),
             ("INPUT_GITHUB_TOKEN", null),
             ("GITHUB_TOKEN", "gh-token"));
 

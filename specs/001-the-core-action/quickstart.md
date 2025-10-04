@@ -20,7 +20,7 @@ jobs:
       - name: Execute issue context agent
         uses: mattdot/issueagent@v1
         with:
-          github-token: ${{ github.token }}
+          github_token: ${{ github.token }}
 ```
 
 ## 2. Expected behavior
