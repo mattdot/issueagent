@@ -10,9 +10,8 @@ RUN apk add --no-cache clang lld build-base zlib-dev
 # Copy solution and restore
 COPY Directory.Build.props Directory.Packages.props IssueAgent.sln ./
 COPY src ./src
-COPY tests ./tests
 
-RUN dotnet restore IssueAgent.sln
+RUN dotnet restore src/IssueAgent.Action/IssueAgent.Action.csproj
 
 # Publish self-contained AOT binary for linux-musl-x64
 RUN dotnet publish src/IssueAgent.Action/IssueAgent.Action.csproj \
@@ -23,7 +22,8 @@ RUN dotnet publish src/IssueAgent.Action/IssueAgent.Action.csproj \
     -p:PublishTrimmed=true \
     -p:InvariantGlobalization=true \
     -p:StripSymbols=true \
-    -o /app/publish
+    -o /app/publish \
+    --no-restore
 
 ########## Runtime ##########
 FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine AS runtime

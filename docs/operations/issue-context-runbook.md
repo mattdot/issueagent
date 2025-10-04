@@ -57,6 +57,6 @@ This runbook describes how to triage and remediate incidents involving the Issue
 ## Useful References
 
 - [GitHub Action metadata](../../action.yml)
-- [Dockerfile](../../containers/action/Dockerfile)
+- [Dockerfile](../../Dockerfile)
 - [GraphQL executor implementation](../../src/IssueAgent.Agent/GraphQL/IssueContextQueryExecutor.cs)
 - [README](../../README.md) for inputs and usage

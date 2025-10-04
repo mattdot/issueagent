@@ -56,7 +56,7 @@
 - [X] T019 Implement Microsoft Agent Framework bootstrap wiring services in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs`.
 - [X] T020 Implement Docker entrypoint host that loads event payload and invokes the agent in `src/IssueAgent.Action/Program.cs` (with supporting `Scripts/entrypoint.sh`).
 - [X] T021 Define GitHub Action metadata with inputs/permissions in `action.yml`.
-- [X] T022 Author multi-stage publish recipe meeting <150 MB target in `containers/action/Dockerfile`.
+- [X] T022 Author multi-stage publish recipe meeting <150 MB target in `Dockerfile`.
 - [X] T023 Create publish automation script for container/image versioning in `src/IssueAgent.Action/Scripts/publish.sh`.
 
 ## Phase 3.4: Integration & Tooling

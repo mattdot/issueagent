@@ -1,0 +1,10 @@
+.git
+.gitignore
+bin
+obj
+**/bin
+**/obj
+tests
+.idea
+.vscode
+.gitmodules
