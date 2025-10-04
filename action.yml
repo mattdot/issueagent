@@ -16,4 +16,4 @@ inputs:
     default: "5"
 runs:
   using: "docker"
-  image: "containers/action/Dockerfile"
+  image: "Dockerfile"

@@ -42,7 +42,7 @@
 - **Agent orchestration**: `src/IssueAgent.Agent/` (or equivalent namespace)
 - **Configuration defaults**: `src/IssueAgent.Configuration/`
 - **Tests**: `tests/IssueAgent.UnitTests/`, `tests/IssueAgent.IntegrationTests/`, `tests/IssueAgent.PerformanceTests/`
-- **Containers**: `containers/action/`
+- **Containers**: `Dockerfile`
 - Adjust names to match the actual solution (.sln) structure recorded in plan.md
 
 ## Phase 3.1: Setup
@@ -67,7 +67,7 @@
 
 ## Phase 3.4: Integration
 - [ ] T014 Implement GitHub API client adapter with retry/performance policies in `src/IssueAgent/Infrastructure/GitHub/GitHubClientAdapter.cs`
-- [ ] T015 Update prebuilt container specification in `containers/action/Dockerfile` with caching layers and publish script
+- [ ] T015 Update prebuilt container specification in `Dockerfile` with caching layers and publish script
 - [ ] T016 Add configuration migration helpers for new inputs in `src/IssueAgent.Configuration/Migrations/*.cs`
 - [ ] T017 Capture telemetry for cold-start timing and marketplace metrics in `src/IssueAgent/Infrastructure/Telemetry/ColdStartMetrics.cs`
 

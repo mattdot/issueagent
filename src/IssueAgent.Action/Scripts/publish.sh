@@ -28,7 +28,7 @@ IMAGE_REF_DEFAULT="ghcr.io/mattdot/issueagent"
 IMAGE_REF="${2:-$IMAGE_REF_DEFAULT}"
 PUSH=${PUSH:-true}
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-DOCKERFILE_PATH="${ROOT_DIR}/containers/action/Dockerfile"
+DOCKERFILE_PATH="${ROOT_DIR}/Dockerfile"
 
 IMAGE_TAG="${IMAGE_REF}:${VERSION}"
 

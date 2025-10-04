@@ -91,7 +91,7 @@ dotnet test
 To build the Docker image locally:
 
 ```bash
-docker build -f containers/action/Dockerfile -t issueagent:local .
+docker build -f Dockerfile -t issueagent:local .
 ```
 
 To run the published AOT binary manually (requires environment variables similar to GitHub Actions):
@@ -114,7 +114,7 @@ The action publishes as a .NET 8 AOT single-file binary running on Alpine. Typic
 
 - `src/IssueAgent.Agent` — Core agent logic and GraphQL client
 - `src/IssueAgent.Action` — Action host that wires the agent into the Docker entrypoint
-- `containers/action/Dockerfile` — Multi-stage build producing the runtime image
+- `Dockerfile` — Multi-stage build producing the runtime image
 - `tests/` — Unit, contract, and integration test suites
 - `docs/operations` — Operations runbook for on-call responders
 - `docs/releases` — Release checklist to publish new versions
