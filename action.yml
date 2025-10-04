@@ -1,0 +1,19 @@
+name: "Issue Agent"
+description: "Agent that improves the quality of GitHub issues."
+author: "mattdot"
+permissions:
+  issues: read
+branding:
+  icon: "book-open"
+  color: "blue"
+inputs:
+  github-token:
+    description: "GitHub token with issues:read permission. Defaults to the workflow token if not provided."
+    required: false
+  comments-page-size:
+    description: "Number of recent comments to capture (1-20)."
+    required: false
+    default: "5"
+runs:
+  using: "docker"
+  image: "containers/action/Dockerfile"
