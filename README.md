@@ -14,21 +14,22 @@ on:
 	issue_comment:
 		types: [created]
 
-jobs:
-	issue-context:
-		runs-on: ubuntu-latest
-		permissions:
+	  issues:
+	    types: [opened, reopened]
+	  issue_comment:
+	    types: [created]
 			issues: read
 		steps:
-			- name: Retrieve issue context
-				uses: mattdot/issueagent@v1
-				with:
-					github-token: ${{ github.token }}
-					comments-page-size: 5
-```
-
-### Required Permissions
-
+	  issue-context:
+	    runs-on: ubuntu-latest
+	    permissions:
+	      issues: read
+	    steps:
+	      - name: Retrieve issue context
+	        uses: mattdot/issueagent@v1
+	        with:
+	          github-token: ${{ github.token }}
+	          comments-page-size: 5
 The action only needs the workflow-provided `GITHUB_TOKEN` with `issues: read` scope. If organizational policy restricts default permissions, grant the read scope explicitly in the workflow (as shown above).
 
 ### Inputs
@@ -75,6 +76,16 @@ To use it:
 
 ```bash
 dotnet test
+	The devcontainer automatically verifies the installation by running `dotnet --version` and `uv --version`, and installs the specify-cli tool from the GitHub spec-kit repository and the NuGet MCP Server tool after creation.
+
+	## GitHub Copilot MCP Servers
+
+	This repository is configured to use Model Context Protocol (MCP) servers with GitHub Copilot, providing enhanced capabilities:
+
+	- **MS Docs MCP Server** – Provides access to Microsoft documentation.
+	- **NuGet MCP Server** – Provides access to NuGet package information.
+
+	The MCP servers are defined in `.github/copilot-mcp.json` and are automatically available when using GitHub Copilot in this repository.
 ```
 
 To build the Docker image locally:
@@ -111,3 +122,15 @@ The action publishes as a .NET 8 AOT single-file binary running on Alpine. Typic
 ## Support & Operations
 
 See `docs/operations/issue-context-runbook.md` for guidance on investigating failures, reviewing telemetry, and escalating issues. Release engineering steps are documented in `docs/releases/issue-context-checklist.md`.
+=======
+The devcontainer automatically verifies the installation by running `dotnet --version` and `uv --version`, and installs the specify-cli tool from the GitHub spec-kit repository and the NuGet MCP Server tool after creation.
+
+## GitHub Copilot MCP Servers
+
+This repository is configured to use Model Context Protocol (MCP) servers with GitHub Copilot, providing enhanced capabilities:
+
+- **MS Docs MCP Server** - Provides access to Microsoft documentation
+- **NuGet MCP Server** - Provides access to NuGet package information
+
+The MCP servers are configured in `.github/copilot-mcp.json` and are automatically available when using GitHub Copilot in this repository.
+>>>>>>> origin/main
