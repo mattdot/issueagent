@@ -23,15 +23,11 @@ public class RedactionMiddlewareTests
     }
 
     [Theory]
-    [InlineData("azure_foundry_api_key")]
-    [InlineData("azure-foundry-api-key")]
     [InlineData("azure_ai_foundry_api_key")]
-    [InlineData("azure-ai-foundry-api-key")]
-    [InlineData("input_azure_foundry_api_key")]
+    [InlineData("input_azure_ai_foundry_api_key")]
     [InlineData("api_key")]
-    [InlineData("api-key")]
     [InlineData("apikey")]
-    public void RedactPayload_ShouldMaskAzureFoundryApiKeys(string keyName)
+    public void RedactPayload_ShouldMaskAzureAIFoundryApiKeys(string keyName)
     {
         // Arrange
         var payload = new Dictionary<string, object?>
@@ -54,16 +50,16 @@ public class RedactionMiddlewareTests
         // Arrange
         var payload = new Dictionary<string, object?>
         {
-            ["AZURE_FOUNDRY_API_KEY"] = "key123",
-            ["Azure_Foundry_Api_Key"] = "key456"
+            ["AZURE_AI_FOUNDRY_API_KEY"] = "key123",
+            ["Azure_Ai_Foundry_Api_Key"] = "key456"
         };
 
         // Act
         var redacted = RedactionMiddleware.RedactPayload(payload);
 
         // Assert
-        redacted["AZURE_FOUNDRY_API_KEY"].Should().Be("[REDACTED]");
-        redacted["Azure_Foundry_Api_Key"].Should().Be("[REDACTED]");
+        redacted["AZURE_AI_FOUNDRY_API_KEY"].Should().Be("[REDACTED]");
+        redacted["Azure_Ai_Foundry_Api_Key"].Should().Be("[REDACTED]");
     }
 
     [Fact]

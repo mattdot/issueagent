@@ -9,7 +9,7 @@ namespace IssueAgent.Agent.Runtime;
 /// This is an MVP workaround - Azure AI Foundry Persistent Agents primarily supports TokenCredential (Azure Entra ID).
 /// For production, use DefaultAzureCredential or ManagedIdentityCredential instead.
 /// </summary>
-public class ApiKeyAuthenticationProvider : IAzureFoundryAuthenticationProvider
+public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvider
 {
     private readonly string _apiKey;
 

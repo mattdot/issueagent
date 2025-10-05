@@ -52,11 +52,11 @@ public static class AgentBootstrap
         LogMetadata(logger, environment.Metadata);
 
         // Initialize Azure AI Foundry connection if configured
-        var azureFoundryConfig = LoadAzureFoundryConfiguration();
+        var azureFoundryConfig = LoadAzureAIFoundryConfiguration();
         if (azureFoundryConfig != null)
         {
             logger.LogInformation("Initializing Azure AI Foundry connection...");
-            var connectionResult = await InitializeAzureFoundryAsync(azureFoundryConfig, cancellationToken).ConfigureAwait(false);
+            var connectionResult = await InitializeAzureAIFoundryAsync(azureFoundryConfig, cancellationToken).ConfigureAwait(false);
 
             if (!connectionResult.IsSuccess)
             {
@@ -143,8 +143,8 @@ public static class AgentBootstrap
     /// <param name="configuration">Azure AI Foundry configuration with endpoint, API key, model deployment, and API version.</param>
     /// <param name="cancellationToken">Cancellation token to abort the connection attempt.</param>
     /// <returns>Connection result with client instance on success or error details on failure.</returns>
-    public static async Task<AzureFoundryConnectionResult> InitializeAzureFoundryAsync(
-        AzureFoundryConfiguration configuration,
+    public static async Task<AzureAIFoundryConnectionResult> InitializeAzureAIFoundryAsync(
+        AzureAIFoundryConfiguration configuration,
         CancellationToken cancellationToken = default)
     {
         if (configuration == null)
@@ -188,7 +188,7 @@ public static class AgentBootstrap
             {
                 // Model/deployment not found (this would happen during actual agent operations)
                 stopwatch.Stop();
-                return AzureFoundryConnectionResult.Failure(
+                return AzureAIFoundryConnectionResult.Failure(
                     $"Model deployment '{configuration.ModelDeploymentName ?? "gpt-5-mini"}' not found. Verify the deployment name in Azure AI Foundry.",
                     ConnectionErrorCategory.ModelNotFound,
                     attemptedEndpoint,
@@ -198,7 +198,7 @@ public static class AgentBootstrap
             {
                 // Authentication failure
                 stopwatch.Stop();
-                return AzureFoundryConnectionResult.Failure(
+                return AzureAIFoundryConnectionResult.Failure(
                     $"Authentication failed. Verify the API key has access to the endpoint. Status: {ex.Status}",
                     ConnectionErrorCategory.AuthenticationFailure,
                     attemptedEndpoint,
@@ -208,7 +208,7 @@ public static class AgentBootstrap
             {
                 // Quota exceeded
                 stopwatch.Stop();
-                return AzureFoundryConnectionResult.Failure(
+                return AzureAIFoundryConnectionResult.Failure(
                     "Azure AI Foundry quota exceeded. Check your subscription limits and usage.",
                     ConnectionErrorCategory.QuotaExceeded,
                     attemptedEndpoint,
@@ -218,7 +218,7 @@ public static class AgentBootstrap
             {
                 // API version unsupported
                 stopwatch.Stop();
-                return AzureFoundryConnectionResult.Failure(
+                return AzureAIFoundryConnectionResult.Failure(
                     $"API version '{configuration.ApiVersion ?? "2025-04-01-preview"}' is not supported by the endpoint. Use a supported version like '2025-04-01-preview'.",
                     ConnectionErrorCategory.ApiVersionUnsupported,
                     attemptedEndpoint,
@@ -228,7 +228,7 @@ public static class AgentBootstrap
             {
                 // Other Azure request failures
                 stopwatch.Stop();
-                return AzureFoundryConnectionResult.Failure(
+                return AzureAIFoundryConnectionResult.Failure(
                     $"Azure AI Foundry request failed: {ex.Message} (Status: {ex.Status})",
                     ConnectionErrorCategory.UnknownError,
                     attemptedEndpoint,
@@ -236,7 +236,7 @@ public static class AgentBootstrap
             }
 
             stopwatch.Stop();
-            return AzureFoundryConnectionResult.Success(client, attemptedEndpoint, stopwatch.Elapsed);
+            return AzureAIFoundryConnectionResult.Success(client, attemptedEndpoint, stopwatch.Elapsed);
         }
         catch (ValidationException validationEx)
         {
@@ -247,7 +247,7 @@ public static class AgentBootstrap
                 ? ConnectionErrorCategory.MissingConfiguration
                 : ConnectionErrorCategory.InvalidConfiguration;
             
-            return AzureFoundryConnectionResult.Failure(
+            return AzureAIFoundryConnectionResult.Failure(
                 validationEx.Message,
                 errorCategory,
                 attemptedEndpoint,
@@ -257,7 +257,7 @@ public static class AgentBootstrap
         {
             // External cancellation (user/system requested)
             stopwatch.Stop();
-            return AzureFoundryConnectionResult.Failure(
+            return AzureAIFoundryConnectionResult.Failure(
                 "Connection attempt was cancelled by the caller.",
                 ConnectionErrorCategory.NetworkTimeout,
                 attemptedEndpoint,
@@ -267,7 +267,7 @@ public static class AgentBootstrap
         {
             // Timeout cancellation (exceeded ConnectionTimeout)
             stopwatch.Stop();
-            return AzureFoundryConnectionResult.Failure(
+            return AzureAIFoundryConnectionResult.Failure(
                 $"Connection attempt timed out after {configuration.ConnectionTimeout.TotalSeconds:F1} seconds. Check network connectivity and endpoint availability.",
                 ConnectionErrorCategory.NetworkTimeout,
                 attemptedEndpoint,
@@ -276,7 +276,7 @@ public static class AgentBootstrap
         catch (HttpRequestException httpEx) when (httpEx.InnerException is SocketException)
         {
             stopwatch.Stop();
-            return AzureFoundryConnectionResult.Failure(
+            return AzureAIFoundryConnectionResult.Failure(
                 $"Network error connecting to Azure AI Foundry: {httpEx.Message}. Check endpoint URL and network connectivity.",
                 ConnectionErrorCategory.NetworkError,
                 attemptedEndpoint,
@@ -285,7 +285,7 @@ public static class AgentBootstrap
         catch (HttpRequestException httpEx)
         {
             stopwatch.Stop();
-            return AzureFoundryConnectionResult.Failure(
+            return AzureAIFoundryConnectionResult.Failure(
                 $"HTTP error connecting to Azure AI Foundry: {httpEx.Message}",
                 ConnectionErrorCategory.NetworkError,
                 attemptedEndpoint,
@@ -294,7 +294,7 @@ public static class AgentBootstrap
         catch (Exception ex)
         {
             stopwatch.Stop();
-            return AzureFoundryConnectionResult.Failure(
+            return AzureAIFoundryConnectionResult.Failure(
                 $"Unexpected error initializing Azure AI Foundry: {ex.GetType().Name} - {ex.Message}",
                 ConnectionErrorCategory.UnknownError,
                 attemptedEndpoint,
@@ -306,7 +306,7 @@ public static class AgentBootstrap
     /// Loads Azure AI Foundry configuration from action inputs or environment variables.
     /// Returns null if Azure AI Foundry is not configured (optional feature).
     /// </summary>
-    private static AzureFoundryConfiguration? LoadAzureFoundryConfiguration()
+    private static AzureAIFoundryConfiguration? LoadAzureAIFoundryConfiguration()
     {
         // Check if Azure AI Foundry is configured (endpoint is the required field)
         var endpoint = Environment.GetEnvironmentVariable("INPUT_AZURE_FOUNDRY_ENDPOINT")
@@ -330,7 +330,7 @@ public static class AgentBootstrap
         var apiVersion = Environment.GetEnvironmentVariable("INPUT_AZURE_FOUNDRY_API_VERSION")
             ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_VERSION");
 
-        return new AzureFoundryConfiguration
+        return new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint,
             ApiKey = apiKey,

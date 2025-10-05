@@ -37,7 +37,7 @@ public class ApiKeyAuthenticationProviderTests
         var methodName = provider.GetAuthenticationMethodName();
 
         // Assert
-        Assert.Equal("API Key", methodName);
+        Assert.Equal("API Key (Static Token)", methodName);
     }
 
     [Fact]

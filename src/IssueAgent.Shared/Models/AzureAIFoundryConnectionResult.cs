@@ -5,7 +5,7 @@ namespace IssueAgent.Shared.Models;
 /// <summary>
 /// Represents the outcome of an Azure AI Foundry connection attempt.
 /// </summary>
-public class AzureFoundryConnectionResult
+public class AzureAIFoundryConnectionResult
 {
     /// <summary>
     /// Indicates whether the connection was successful.
@@ -45,12 +45,12 @@ public class AzureFoundryConnectionResult
     /// <summary>
     /// Creates a successful connection result.
     /// </summary>
-    public static AzureFoundryConnectionResult Success(
+    public static AzureAIFoundryConnectionResult Success(
         PersistentAgentsClient client,
         string endpoint,
         TimeSpan duration)
     {
-        return new AzureFoundryConnectionResult
+        return new AzureAIFoundryConnectionResult
         {
             IsSuccess = true,
             Client = client,
@@ -65,13 +65,13 @@ public class AzureFoundryConnectionResult
     /// <summary>
     /// Creates a failed connection result.
     /// </summary>
-    public static AzureFoundryConnectionResult Failure(
+    public static AzureAIFoundryConnectionResult Failure(
         string errorMessage,
         ConnectionErrorCategory errorCategory,
         string endpoint,
         TimeSpan duration)
     {
-        return new AzureFoundryConnectionResult
+        return new AzureAIFoundryConnectionResult
         {
             IsSuccess = false,
             Client = null,

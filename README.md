@@ -47,7 +47,6 @@ jobs:
         uses: mattdot/issueagent@v1
         with:
           github_token: ${{ github.token }}
-          comments_page_size: 10  # Capture last 10 comments
 ```
 
 ## Configuration
@@ -57,11 +56,10 @@ jobs:
 | Name | Required | Default | Description |
 | ---- | -------- | ------- | ----------- |
 | `github_token` | No | `${{ github.token }}` | Token for GitHub API authentication with `issues:read` permission. |
-| `comments_page_size` | No | `5` | Number of recent comments to capture (1-20). |
-| `azure_foundry_endpoint` | No | - | Azure AI Foundry project endpoint URL (format: `https://<resource>.services.ai.azure.com/api/projects/<project>`). Falls back to `AZURE_AI_FOUNDRY_ENDPOINT` environment variable. |
-| `azure_foundry_api_key` | No | - | Azure AI Foundry API key for authentication. Falls back to `AZURE_AI_FOUNDRY_API_KEY` environment variable. Store in GitHub Secrets. |
-| `azure_foundry_model_deployment` | No | `gpt-5-mini` | Model deployment name in Azure AI Foundry project. Falls back to `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` environment variable. |
-| `azure_foundry_api_version` | No | `2025-04-01-preview` | Azure AI Foundry API version. Falls back to `AZURE_AI_FOUNDRY_API_VERSION` environment variable. |
+| `azure_ai_foundry_endpoint` | No | - | Azure AI Foundry project endpoint URL (format: `https://<resource>.services.ai.azure.com/api/projects/<project>`). Falls back to `AZURE_AI_FOUNDRY_ENDPOINT` environment variable. |
+| `azure_ai_foundry_api_key` | No | - | Azure AI Foundry API key for authentication. Falls back to `AZURE_AI_FOUNDRY_API_KEY` environment variable. Store in GitHub Secrets. |
+| `azure_ai_foundry_model_deployment` | No | `gpt-5-mini` | Model deployment name in Azure AI Foundry project. Falls back to `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` environment variable. |
+| `azure_ai_foundry_api_version` | No | `2025-04-01-preview` | Azure AI Foundry API version. Falls back to `AZURE_AI_FOUNDRY_API_VERSION` environment variable. |
 
 ### Azure AI Foundry Configuration
 
@@ -99,25 +97,38 @@ jobs:
         uses: mattdot/issueagent@v1
         with:
           github_token: ${{ github.token }}
-          azure_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
-          azure_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
-          azure_foundry_model_deployment: gpt-4o-mini  # Optional: specify your model
+          azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+          azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+          azure_ai_foundry_model_deployment: gpt-4o-mini  # Optional: specify your model
 ```
 
-#### Environment Variable Configuration
+#### How Environment Variables Work
 
-Alternatively, set environment variables (useful for testing):
+The action passes inputs to the Docker container as environment variables. You have two options:
 
+**Option 1: Use inputs (recommended)**
 ```yaml
 steps:
   - name: Analyze Issue
     uses: mattdot/issueagent@v1
-    env:
-      AZURE_AI_FOUNDRY_ENDPOINT: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
-      AZURE_AI_FOUNDRY_API_KEY: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
     with:
       github_token: ${{ github.token }}
+      azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+      azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
 ```
+
+**Option 2: Mix inputs and environment variables**
+```yaml
+steps:
+  - name: Analyze Issue
+    uses: mattdot/issueagent@v1
+    with:
+      github_token: ${{ github.token }}
+      # Inputs take precedence; if not provided, falls back to env vars
+      azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+```
+
+The action internally checks inputs first, then falls back to `AZURE_AI_FOUNDRY_*` environment variables if inputs are not provided.
 
 #### Connection Validation
 

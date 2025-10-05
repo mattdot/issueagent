@@ -56,10 +56,10 @@ public class ConnectionErrorCategoryTests
     }
 
     [Fact]
-    public void AzureFoundryConnectionResult_WithSuccess_ShouldHaveClientAndNoError()
+    public void AzureAIFoundryConnectionResult_WithSuccess_ShouldHaveClientAndNoError()
     {
         // Arrange & Act
-        var result = new AzureFoundryConnectionResult
+        var result = new AzureAIFoundryConnectionResult
         {
             IsSuccess = true,
             Client = null, // Will be actual client in real implementation
@@ -77,10 +77,10 @@ public class ConnectionErrorCategoryTests
     }
 
     [Fact]
-    public void AzureFoundryConnectionResult_WithFailure_ShouldHaveErrorAndNoClient()
+    public void AzureAIFoundryConnectionResult_WithFailure_ShouldHaveErrorAndNoClient()
     {
         // Arrange & Act
-        var result = new AzureFoundryConnectionResult
+        var result = new AzureAIFoundryConnectionResult
         {
             IsSuccess = false,
             Client = null,

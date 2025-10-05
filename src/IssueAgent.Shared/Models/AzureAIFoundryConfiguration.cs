@@ -5,7 +5,7 @@ namespace IssueAgent.Shared.Models;
 /// <summary>
 /// Encapsulates all configuration parameters required to connect to Azure AI Foundry.
 /// </summary>
-public class AzureFoundryConfiguration
+public class AzureAIFoundryConfiguration
 {
     private const string DefaultModelDeploymentName = "gpt-5-mini";
     private const string DefaultApiVersion = "2025-04-01-preview";

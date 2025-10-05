@@ -6,7 +6,7 @@ namespace IssueAgent.Agent.Runtime;
 /// Abstraction for different Azure AI Foundry authentication methods.
 /// Enables extensibility for future authentication types (managed identity, service principal).
 /// </summary>
-public interface IAzureFoundryAuthenticationProvider
+public interface IAzureAIFoundryAuthenticationProvider
 {
     /// <summary>
     /// Creates an authenticated PersistentAgentsClient for the specified endpoint.

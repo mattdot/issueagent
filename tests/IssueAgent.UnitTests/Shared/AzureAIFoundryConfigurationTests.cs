@@ -4,10 +4,10 @@ using Xunit;
 namespace IssueAgent.UnitTests.Shared;
 
 /// <summary>
-/// Unit tests for AzureFoundryConfiguration validation logic.
+/// Unit tests for AzureAIFoundryConfiguration validation logic.
 /// Verifies that configuration rules are properly enforced.
 /// </summary>
-public class AzureFoundryConfigurationTests
+public class AzureAIFoundryConfigurationTests
 {
     [Theory]
     [InlineData("https://test.services.ai.azure.com/api/projects/test")]
@@ -16,7 +16,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithValidEndpoint_ShouldNotThrow(string endpoint)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint,
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
@@ -34,7 +34,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithNullOrEmptyEndpoint_ShouldThrow(string? endpoint)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint!,
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
@@ -53,7 +53,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithInvalidEndpointFormat_ShouldThrow(string endpoint)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint,
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
@@ -68,7 +68,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithValidApiKey_ShouldNotThrow()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
@@ -85,7 +85,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithShortApiKey_ShouldThrow(string apiKey)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = apiKey
@@ -104,7 +104,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithValidModelDeploymentName_ShouldNotThrow(string modelName)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -124,7 +124,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithInvalidModelDeploymentName_ShouldThrow(string modelName)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -143,7 +143,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithValidApiVersion_ShouldNotThrow(string apiVersion)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -163,7 +163,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithInvalidApiVersionFormat_ShouldThrow(string apiVersion)
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -179,7 +179,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithNullModelDeployment_ShouldApplyDefault()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -197,7 +197,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithMinimalConfiguration_ShouldApplyAllDefaults()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
@@ -216,7 +216,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithNegativeTimeout_ShouldThrow()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -232,7 +232,7 @@ public class AzureFoundryConfigurationTests
     public void Validate_WithExcessiveTimeout_ShouldThrow()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",

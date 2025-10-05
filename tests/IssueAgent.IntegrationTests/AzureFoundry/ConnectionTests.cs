@@ -2,7 +2,7 @@ using IssueAgent.Shared.Models;
 using IssueAgent.Agent.Runtime;
 using Xunit;
 
-namespace IssueAgent.IntegrationTests.AzureFoundry;
+namespace IssueAgent.IntegrationTests.AzureAIFoundry;
 
 /// <summary>
 /// Integration tests for Azure AI Foundry connection scenarios.
@@ -15,7 +15,7 @@ public class ConnectionTests
     public async Task SuccessfulConnection_WithValidCredentials_ShouldConnect()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = GetTestEndpoint(),
             ApiKey = GetTestApiKey(),
@@ -25,7 +25,7 @@ public class ConnectionTests
         };
 
         // Act
-        var result = await AgentBootstrap.InitializeAzureFoundryAsync(config, CancellationToken.None);
+        var result = await AgentBootstrap.InitializeAzureAIFoundryAsync(config, CancellationToken.None);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -38,14 +38,14 @@ public class ConnectionTests
     public async Task MissingEndpoint_ShouldFailWithClearError()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = null!,
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
         };
 
         // Act
-        var result = await AgentBootstrap.InitializeAzureFoundryAsync(config, CancellationToken.None);
+        var result = await AgentBootstrap.InitializeAzureAIFoundryAsync(config, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -59,7 +59,7 @@ public class ConnectionTests
     public async Task InvalidApiKey_ShouldFailWithAuthenticationError()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
             ApiKey = "invalid-api-key-0123456789abcdef",
@@ -68,7 +68,7 @@ public class ConnectionTests
         };
 
         // Act
-        var result = await AgentBootstrap.InitializeAzureFoundryAsync(config, CancellationToken.None);
+        var result = await AgentBootstrap.InitializeAzureAIFoundryAsync(config, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -83,7 +83,7 @@ public class ConnectionTests
     public async Task InvalidEndpointFormat_ShouldFailWithValidationError()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "http://example.com/wrong",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -91,7 +91,7 @@ public class ConnectionTests
         };
 
         // Act
-        var result = await AgentBootstrap.InitializeAzureFoundryAsync(config, CancellationToken.None);
+        var result = await AgentBootstrap.InitializeAzureAIFoundryAsync(config, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -105,7 +105,7 @@ public class ConnectionTests
     public async Task ModelDeploymentNotFound_ShouldFailWithClearError()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = GetTestEndpoint(),
             ApiKey = GetTestApiKey(),
@@ -114,7 +114,7 @@ public class ConnectionTests
         };
 
         // Act
-        var result = await AgentBootstrap.InitializeAzureFoundryAsync(config, CancellationToken.None);
+        var result = await AgentBootstrap.InitializeAzureAIFoundryAsync(config, CancellationToken.None);
 
         // Assert
         Assert.False(result.IsSuccess);
@@ -130,7 +130,7 @@ public class ConnectionTests
     public async Task NetworkTimeout_ShouldFailAfter30Seconds()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://unreachable.services.ai.azure.com/api/projects/test",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -141,7 +141,7 @@ public class ConnectionTests
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
         // Act
-        var result = await AgentBootstrap.InitializeAzureFoundryAsync(config, CancellationToken.None);
+        var result = await AgentBootstrap.InitializeAzureAIFoundryAsync(config, CancellationToken.None);
         stopwatch.Stop();
 
         // Assert

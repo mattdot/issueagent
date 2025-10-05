@@ -1,5 +1,6 @@
 using IssueAgent.Shared.Models;
 using Xunit;
+using ValidationException = IssueAgent.Shared.Models.ValidationException;
 
 namespace IssueAgent.ContractTests.Configuration;
 
@@ -8,13 +9,13 @@ namespace IssueAgent.ContractTests.Configuration;
 /// These tests verify that configuration validation follows the contract defined in
 /// specs/002-ai-foundry-connectivity/contracts/configuration-validation-contract.md
 /// </summary>
-public class AzureFoundryConfigurationValidationTests
+public class AzureAIFoundryConfigurationValidationTests
 {
     [Fact]
     public void ValidConfiguration_ShouldPassValidation()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -32,7 +33,7 @@ public class AzureFoundryConfigurationValidationTests
     public void MissingEndpoint_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = null!,
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -50,7 +51,7 @@ public class AzureFoundryConfigurationValidationTests
     public void InvalidEndpointFormat_HttpInsteadOfHttps_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "http://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -67,7 +68,7 @@ public class AzureFoundryConfigurationValidationTests
     public void InvalidEndpointDomain_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://example.com/wrong",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -84,7 +85,7 @@ public class AzureFoundryConfigurationValidationTests
     public void MissingApiKey_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "",
@@ -102,7 +103,7 @@ public class AzureFoundryConfigurationValidationTests
     public void ApiKeyTooShort_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "short",
@@ -118,7 +119,7 @@ public class AzureFoundryConfigurationValidationTests
     public void InvalidModelDeploymentName_SpecialCharacters_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -134,7 +135,7 @@ public class AzureFoundryConfigurationValidationTests
     public void InvalidApiVersionFormat_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -152,7 +153,7 @@ public class AzureFoundryConfigurationValidationTests
     public void FutureApiVersionDate_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -169,7 +170,7 @@ public class AzureFoundryConfigurationValidationTests
     public void InvalidConnectionTimeout_Negative_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -186,7 +187,7 @@ public class AzureFoundryConfigurationValidationTests
     public void ExcessiveConnectionTimeout_ShouldThrowValidationException()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -203,7 +204,7 @@ public class AzureFoundryConfigurationValidationTests
     public void NullModelDeployment_ShouldUseDefault()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
@@ -221,7 +222,7 @@ public class AzureFoundryConfigurationValidationTests
     public void MinimalValidConfiguration_ShouldApplyDefaults()
     {
         // Arrange
-        var config = new AzureFoundryConfiguration
+        var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
             ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
@@ -235,13 +236,4 @@ public class AzureFoundryConfigurationValidationTests
         Assert.Equal("2025-04-01-preview", config.ApiVersion);
         Assert.Equal(TimeSpan.FromSeconds(30), config.ConnectionTimeout);
     }
-}
-
-/// <summary>
-/// Placeholder exception for validation errors.
-/// Will be implemented in Phase 3.3.
-/// </summary>
-public class ValidationException : Exception
-{
-    public ValidationException(string message) : base(message) { }
 }

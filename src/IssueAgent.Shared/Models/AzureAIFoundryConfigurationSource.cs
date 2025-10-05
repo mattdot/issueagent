@@ -3,7 +3,7 @@ namespace IssueAgent.Shared.Models;
 /// <summary>
 /// Tracks where configuration values originated for debugging and error messages.
 /// </summary>
-public enum AzureFoundryConfigurationSource
+public enum AzureAIFoundryConfigurationSource
 {
     /// <summary>
     /// Value from GitHub Actions input parameter.
