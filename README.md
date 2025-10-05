@@ -47,7 +47,6 @@ jobs:
         uses: mattdot/issueagent@v1
         with:
           github_token: ${{ github.token }}
-          comments_page_size: 10  # Capture last 10 comments
 ```
 
 ## Configuration
@@ -57,7 +56,89 @@ jobs:
 | Name | Required | Default | Description |
 | ---- | -------- | ------- | ----------- |
 | `github_token` | No | `${{ github.token }}` | Token for GitHub API authentication with `issues:read` permission. |
-| `comments_page_size` | No | `5` | Number of recent comments to capture (1-20). |
+| `azure_ai_foundry_endpoint` | No | - | Azure AI Foundry project endpoint URL (format: `https://<resource>.services.ai.azure.com/api/projects/<project>`). Falls back to `AZURE_AI_FOUNDRY_ENDPOINT` environment variable. |
+| `azure_ai_foundry_api_key` | No | - | Azure AI Foundry API key for authentication. Falls back to `AZURE_AI_FOUNDRY_API_KEY` environment variable. Store in GitHub Secrets. |
+| `azure_ai_foundry_model_deployment` | No | `gpt-5-mini` | Model deployment name in Azure AI Foundry project. Falls back to `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` environment variable. |
+| `azure_ai_foundry_api_version` | No | `2025-04-01-preview` | Azure AI Foundry API version. Falls back to `AZURE_AI_FOUNDRY_API_VERSION` environment variable. |
+
+### Azure AI Foundry Configuration
+
+Issue Agent uses Azure AI Foundry for AI-powered issue analysis. To enable AI features:
+
+#### 1. Create Azure AI Foundry Project
+
+1. Go to [Azure AI Foundry portal](https://ai.azure.com)
+2. Create a new project or use an existing one
+3. Note the project endpoint URL (Settings → Overview)
+4. Generate an API key (Settings → Keys and Endpoints)
+
+#### 2. Add Secrets to GitHub
+
+Add these secrets to your repository (Settings → Secrets and variables → Actions):
+
+- `AZURE_AI_FOUNDRY_ENDPOINT`: Your project endpoint URL
+- `AZURE_AI_FOUNDRY_API_KEY`: Your API key
+
+#### 3. Update Workflow
+
+```yaml
+name: Issue Context
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  analyze-issue:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    steps:
+      - name: Analyze Issue
+        uses: mattdot/issueagent@v1
+        with:
+          github_token: ${{ github.token }}
+          azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+          azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+          azure_ai_foundry_model_deployment: gpt-4o-mini  # Optional: specify your model
+```
+
+#### How Environment Variables Work
+
+The action passes inputs to the Docker container as environment variables. You have two options:
+
+**Option 1: Use inputs (recommended)**
+```yaml
+steps:
+  - name: Analyze Issue
+    uses: mattdot/issueagent@v1
+    with:
+      github_token: ${{ github.token }}
+      azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+      azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+```
+
+**Option 2: Mix inputs and environment variables**
+```yaml
+steps:
+  - name: Analyze Issue
+    uses: mattdot/issueagent@v1
+    with:
+      github_token: ${{ github.token }}
+      # Inputs take precedence; if not provided, falls back to env vars
+      azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+```
+
+The action internally checks inputs first, then falls back to `AZURE_AI_FOUNDRY_*` environment variables if inputs are not provided.
+
+#### Connection Validation
+
+The action validates the Azure AI Foundry connection during startup:
+- Validates endpoint URL format
+- Checks API key length (minimum 32 characters)
+- Establishes connection within 30 seconds
+- Logs connection success with duration metrics
+
+Failed connections will cause the action to fail with a descriptive error message.
 
 ## Current Status & Roadmap
 

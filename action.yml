@@ -10,10 +10,24 @@ inputs:
   github_token:
     description: "GitHub token with issues:read permission. Defaults to the workflow token if not provided."
     required: false
-  comments_page_size:
-    description: "Number of recent comments to capture (1-20)."
+  azure_ai_foundry_endpoint:
+    description: "Azure AI Foundry project endpoint URL (e.g., https://<resource>.services.ai.azure.com/api/projects/<project>). Falls back to AZURE_AI_FOUNDRY_ENDPOINT environment variable."
     required: false
-    default: "5"
+  azure_ai_foundry_api_key:
+    description: "Azure AI Foundry API key for authentication. Falls back to AZURE_AI_FOUNDRY_API_KEY environment variable. For production, use GitHub Secrets."
+    required: false
+  azure_ai_foundry_model_deployment:
+    description: "Name of the deployed model in Azure AI Foundry. Defaults to 'gpt-5-mini' if not provided."
+    required: false
+  azure_ai_foundry_api_version:
+    description: "Azure AI Foundry API version (format: YYYY-MM-DD or YYYY-MM-DD-preview). Defaults to '2025-04-01-preview' if not provided."
+    required: false
 runs:
   using: "docker"
   image: "Dockerfile"
+  env:
+    GITHUB_TOKEN: ${{ inputs.github_token }}
+    AZURE_AI_FOUNDRY_ENDPOINT: ${{ inputs.azure_ai_foundry_endpoint }}
+    AZURE_AI_FOUNDRY_API_KEY: ${{ inputs.azure_ai_foundry_api_key }}
+    AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT: ${{ inputs.azure_ai_foundry_model_deployment }}
+    AZURE_AI_FOUNDRY_API_VERSION: ${{ inputs.azure_ai_foundry_api_version }}

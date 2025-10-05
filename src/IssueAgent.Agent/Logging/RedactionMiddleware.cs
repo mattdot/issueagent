@@ -10,9 +10,12 @@ public static class RedactionMiddleware
         "authorization",
         "auth",
         "token",
-    "github-token",
-    "github_token",
-        "access-token"
+        "github_token",
+        "access_token",
+        "api_key",
+        "apikey",
+        "azure_ai_foundry_api_key",
+        "input_azure_ai_foundry_api_key"
     };
 
     private const string RedactedValue = "[REDACTED]";
