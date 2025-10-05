@@ -154,6 +154,48 @@ public class DockerContainerIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task DockerContainer_ShouldRespectCustomGraphQLUrl()
+    {
+        var testToken = Environment.GetEnvironmentVariable("TEST_PAT");
+        var testRepo = Environment.GetEnvironmentVariable("TEST_REPO");
+        
+        if (string.IsNullOrWhiteSpace(testToken) || string.IsNullOrWhiteSpace(testRepo))
+        {
+            _output.WriteLine("Skipping custom URL test: TEST_PAT and TEST_REPO environment variables are required");
+            return;
+        }
+
+        await BuildDockerImage();
+
+        var eventPayload = CreateIssueOpenedEventPayload(testRepo, 2);
+        var tempEventFile = await CreateTempEventFile(eventPayload);
+
+        try
+        {
+            // Test with explicit GITHUB_GRAPHQL_URL pointing to GitHub.com
+            var result = await RunDockerContainer(
+                testToken, 
+                testRepo, 
+                tempEventFile, 
+                graphqlUrl: "https://api.github.com/graphql");
+
+            _output.WriteLine($"Container exit code: {result.ExitCode}");
+            _output.WriteLine($"Container output:\n{result.Output}");
+
+            result.ExitCode.Should().Be(0, "Agent should successfully fetch issue context with custom GraphQL URL");
+            result.Output.Should().Contain("Issue context status: Success", "Agent should report success status");
+            result.Output.Should().Contain("issueId=", "Agent should retrieve issue details");
+        }
+        finally
+        {
+            if (File.Exists(tempEventFile))
+            {
+                File.Delete(tempEventFile);
+            }
+        }
+    }
+
     private async Task BuildDockerImage()
     {
         _output.WriteLine("Building Docker image for integration tests...");
@@ -178,22 +220,48 @@ public class DockerContainerIntegrationTests
         _output.WriteLine("Docker image built successfully");
     }
 
-    private async Task<(int ExitCode, string Output)> RunDockerContainer(string token, string repo, string eventFilePath)
+    private async Task<(int ExitCode, string Output)> RunDockerContainer(
+        string token, 
+        string repo, 
+        string eventFilePath, 
+        string? graphqlUrl = null, 
+        string? apiUrl = null)
     {
         var containerId = Guid.NewGuid().ToString("N")[..12];
         
-        // First, create the container
-        var createResult = await RunDockerCommand(
-            "create",
-            "--name", containerId,
+        // Build environment variables list
+        var envVars = new List<string>
+        {
             "-e", $"INPUT_GITHUB_TOKEN={token}",
             "-e", $"GITHUB_TOKEN={token}",
             "-e", $"GITHUB_REPOSITORY={repo}",
             "-e", "GITHUB_EVENT_NAME=issues",
             "-e", "GITHUB_EVENT_PATH=/tmp/event.json",
             "-e", $"GITHUB_RUN_ID=test-run-{Guid.NewGuid():N}",
-            "-e", "INPUT_COMMENTS_PAGE_SIZE=5",
-            _imageName);
+            "-e", "INPUT_COMMENTS_PAGE_SIZE=5"
+        };
+
+        // Add optional GraphQL URL
+        if (!string.IsNullOrWhiteSpace(graphqlUrl))
+        {
+            envVars.Add("-e");
+            envVars.Add($"GITHUB_GRAPHQL_URL={graphqlUrl}");
+        }
+
+        // Add optional API URL
+        if (!string.IsNullOrWhiteSpace(apiUrl))
+        {
+            envVars.Add("-e");
+            envVars.Add($"GITHUB_API_URL={apiUrl}");
+        }
+
+        // Build full create command
+        var createArgs = new List<string> { "create", "--name", containerId };
+        createArgs.AddRange(envVars);
+        createArgs.Add(_imageName);
+        
+        // First, create the container
+        var createResult = await RunDockerCommand(createArgs.ToArray());
         
         if (createResult.ExitCode != 0)
         {

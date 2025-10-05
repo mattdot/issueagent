@@ -46,7 +46,8 @@ public static class AgentBootstrap
         LogMetadata(logger, environment.Metadata);
 
         var graphQlLogger = loggerFactory.CreateLogger<GitHubGraphQLClient>();
-        var graphQlClient = new GitHubGraphQLClient(environment.Token, graphQlLogger);
+        var graphQlEndpoint = ReadGraphQLEndpoint();
+        var graphQlClient = new GitHubGraphQLClient(environment.Token, graphQlLogger, endpoint: graphQlEndpoint);
         var queryExecutor = new IssueContextQueryExecutor(graphQlClient);
         var metricsRecorder = new LoggingStartupMetricsRecorder(loggerFactory.CreateLogger<LoggingStartupMetricsRecorder>());
         var agent = new IssueContextAgent(new GitHubTokenGuard(), queryExecutor, metricsRecorder);
@@ -123,6 +124,29 @@ public static class AgentBootstrap
         }
 
         return Environment.GetEnvironmentVariable("GITHUB_TOKEN");
+    }
+
+    private static Uri? ReadGraphQLEndpoint()
+    {
+        // Check for GITHUB_GRAPHQL_URL first (GitHub Enterprise Server)
+        var graphqlUrl = Environment.GetEnvironmentVariable("GITHUB_GRAPHQL_URL");
+        if (!string.IsNullOrWhiteSpace(graphqlUrl) && Uri.TryCreate(graphqlUrl, UriKind.Absolute, out var graphqlUri))
+        {
+            return graphqlUri;
+        }
+
+        // Fallback to GITHUB_API_URL and append /graphql (GitHub Enterprise Server)
+        var apiUrl = Environment.GetEnvironmentVariable("GITHUB_API_URL");
+        if (!string.IsNullOrWhiteSpace(apiUrl) && Uri.TryCreate(apiUrl, UriKind.Absolute, out var apiUri))
+        {
+            // GITHUB_API_URL is typically "https://api.github.com" or "https://github.company.com/api/v3"
+            // GraphQL endpoint is at the same origin + /graphql
+            var graphqlPath = new Uri(apiUri, "/graphql");
+            return graphqlPath;
+        }
+
+        // Return null to use the default GitHub.com endpoint
+        return null;
     }
 
     private static string? ReadInputVariable(string inputName)

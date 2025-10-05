@@ -49,14 +49,34 @@ The tests automatically skip if `TEST_PAT` or `TEST_REPO` are not set, making th
 - Validates AOT startup performance (< 5 seconds cold start)
 - Ensures total execution completes within 30 seconds (GitHub Actions requirement)
 
+### 4. `DockerContainer_ShouldRespectCustomGraphQLUrl`
+- Tests support for custom GitHub GraphQL API endpoints
+- Validates `GITHUB_GRAPHQL_URL` environment variable is respected
+- Useful for GitHub Enterprise Server deployments
+- Confirms the agent works with custom API endpoints
+
 ## Test Architecture
 
 These tests use the Docker CLI (`sudo docker`) to:
 1. Build the image from the workspace Dockerfile
 2. Create and run containers with proper environment variables
-3. Mount the GitHub event payload as a volume
+3. Copy the GitHub event payload into the container filesystem
 4. Capture stdout/stderr output
 5. Verify exit codes and log content
+
+### Supported Environment Variables
+
+The Agent respects standard GitHub environment variables for API endpoints:
+
+- **`GITHUB_GRAPHQL_URL`**: Custom GraphQL API endpoint (e.g., `https://github.company.com/api/graphql`)
+  - Takes precedence over `GITHUB_API_URL`
+  - Useful for GitHub Enterprise Server
+  
+- **`GITHUB_API_URL`**: Custom REST API base URL (e.g., `https://github.company.com/api/v3`)
+  - GraphQL endpoint is derived by appending `/graphql`
+  - Falls back to public GitHub.com if not set
+
+- **Standard GitHub Actions variables**: `GITHUB_REPOSITORY`, `GITHUB_EVENT_NAME`, `GITHUB_EVENT_PATH`, `GITHUB_RUN_ID`, `GITHUB_TOKEN`
 
 ## Troubleshooting
 

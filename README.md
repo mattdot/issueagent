@@ -39,6 +39,21 @@ The action only needs the workflow-provided `GITHUB_TOKEN` with `issues: read` s
 | `github_token` | No | `${{ github.token }}` | Token used to authenticate GraphQL calls. Must have `issues:read`. |
 | `comments_page_size` | No | `5` | Number of most recent issue comments to include (1–20). |
 
+### Environment Variables
+
+The action respects standard GitHub environment variables for API endpoints, making it compatible with GitHub Enterprise Server:
+
+| Variable | Description | Default |
+| -------- | ----------- | ------- |
+| `GITHUB_GRAPHQL_URL` | Custom GraphQL API endpoint | `https://api.github.com/graphql` |
+| `GITHUB_API_URL` | Custom REST API base URL (GraphQL derived by appending `/graphql`) | `https://api.github.com` |
+
+**Example for GitHub Enterprise Server:**
+```yaml
+env:
+  GITHUB_GRAPHQL_URL: https://github.company.com/api/graphql
+```
+
 ### Outputs and Logs
 
 The action does not emit formal outputs, but it writes a structured `IssueContextResult` to the workflow logs, including:
