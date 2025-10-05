@@ -1,18 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Octokit.GraphQL;
 
 namespace IssueAgent.Agent.GraphQL;
 
 public class GitHubGraphQLClient : IGraphQLClient
 {
-    private readonly Connection _connection;
+    private readonly HttpClient _httpClient;
     private readonly ILogger<GitHubGraphQLClient> _logger;
+    private static readonly Uri DefaultEndpoint = new Uri("https://api.github.com/graphql");
 
     public GitHubGraphQLClient(
         string token,
@@ -28,10 +31,14 @@ public class GitHubGraphQLClient : IGraphQLClient
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        var header = new ProductHeaderValue(productName ?? "issueagent", productVersion ?? "1.0");
-        _connection = endpoint is null
-            ? new Connection(header, token)
-            : new Connection(header, endpoint, token);
+        _httpClient = new HttpClient
+        {
+            BaseAddress = endpoint ?? DefaultEndpoint
+        };
+        
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
+        _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName ?? "issueagent", productVersion ?? "1.0"));
+        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
     }
 
     public async Task<T> QueryAsync<T>(string query, CancellationToken cancellationToken)
@@ -43,7 +50,16 @@ public class GitHubGraphQLClient : IGraphQLClient
 
         _logger.LogDebug("Executing GitHub GraphQL query: {Query}", query);
 
-        var rawResponse = await _connection.Run(query, cancellationToken).ConfigureAwait(false);
+        // Wrap query in JSON object as required by GitHub GraphQL API
+        // Manual JSON escaping for AOT compatibility
+        var escapedQuery = query.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
+        var requestBody = $"{{\"query\":\"{escapedQuery}\"}}";
+        var content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+
+        var response = await _httpClient.PostAsync("", content, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        var rawResponse = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         if (typeof(T) == typeof(IssueContextQueryResponse))
         {
