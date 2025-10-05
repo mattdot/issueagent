@@ -1,5 +1,8 @@
 <Project>
   <ItemGroup>
+    <PackageVersion Include="Azure.AI.Agents.Persistent" Version="1.0.0-beta.1" />
+    <PackageVersion Include="Azure.AI.Projects" Version="1.0.0-beta.1" />
+    <PackageVersion Include="Azure.Identity" Version="1.14.1" />
     <PackageVersion Include="Microsoft.Agents.AI" Version="1.0.0-preview.251002.1" />
   <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.9" />
   <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="9.0.9" />

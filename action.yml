@@ -14,6 +14,18 @@ inputs:
     description: "Number of recent comments to capture (1-20)."
     required: false
     default: "5"
+  azure_foundry_endpoint:
+    description: "Azure AI Foundry project endpoint URL (e.g., https://<resource>.services.ai.azure.com/api/projects/<project>). Falls back to AZURE_AI_FOUNDRY_ENDPOINT environment variable."
+    required: false
+  azure_foundry_api_key:
+    description: "Azure AI Foundry API key for authentication. Falls back to AZURE_AI_FOUNDRY_API_KEY environment variable. For production, use GitHub Secrets."
+    required: false
+  azure_foundry_model_deployment:
+    description: "Name of the deployed model in Azure AI Foundry. Defaults to 'gpt-5-mini' if not provided."
+    required: false
+  azure_foundry_api_version:
+    description: "Azure AI Foundry API version (format: YYYY-MM-DD or YYYY-MM-DD-preview). Defaults to '2025-04-01-preview' if not provided."
+    required: false
 runs:
   using: "docker"
   image: "Dockerfile"

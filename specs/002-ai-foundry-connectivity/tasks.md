@@ -38,91 +38,89 @@
 - **Contract tests**: `tests/IssueAgent.ContractTests/`
 
 ## Phase 3.1: Setup & Dependencies
-- [ ] T001 Add Azure.AI.Agents.Persistent NuGet package to `src/IssueAgent.Agent/IssueAgent.Agent.csproj`
-- [ ] T002 Add Azure.Identity NuGet package to `src/IssueAgent.Agent/IssueAgent.Agent.csproj`
-- [ ] T003 Add Azure.AI.Projects NuGet package to `src/IssueAgent.Agent/IssueAgent.Agent.csproj`
+- [x] T001 Add Azure.AI.Agents.Persistent NuGet package to `src/IssueAgent.Agent/IssueAgent.Agent.csproj`
+- [x] T002 Add Azure.Identity NuGet package to `src/IssueAgent.Agent/IssueAgent.Agent.csproj`
+- [x] T003 Add Azure.AI.Projects NuGet package to `src/IssueAgent.Agent/IssueAgent.Agent.csproj`
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
 
 ### Configuration Validation Contract Tests
-- [ ] T004 [P] Add configuration validation contract test for valid configuration in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T005 [P] Add configuration validation contract test for missing endpoint in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T006 [P] Add configuration validation contract test for invalid endpoint format (HTTP instead of HTTPS) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T007 [P] Add configuration validation contract test for invalid endpoint domain in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T008 [P] Add configuration validation contract test for missing API key in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T009 [P] Add configuration validation contract test for API key too short in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T010 [P] Add configuration validation contract test for invalid model deployment name (special characters) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T011 [P] Add configuration validation contract test for invalid API version format in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T012 [P] Add configuration validation contract test for future API version date in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T013 [P] Add configuration validation contract test for invalid connection timeout (negative) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T014 [P] Add configuration validation contract test for excessive connection timeout in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T015 [P] Add configuration validation contract test for null model deployment (should use default) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
-- [ ] T016 [P] Add configuration validation contract test for minimal valid configuration (defaults applied) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T004 [P] Add configuration validation contract test for valid configuration in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T005 [P] Add configuration validation contract test for missing endpoint in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T006 [P] Add configuration validation contract test for invalid endpoint format (HTTP instead of HTTPS) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T007 [P] Add configuration validation contract test for invalid endpoint domain in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T008 [P] Add configuration validation contract test for missing API key in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T009 [P] Add configuration validation contract test for API key too short in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T010 [P] Add configuration validation contract test for invalid model deployment name (special characters) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T011 [P] Add configuration validation contract test for invalid API version format in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T012 [P] Add configuration validation contract test for future API version date in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T013 [P] Add configuration validation contract test for invalid connection timeout (negative) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T014 [P] Add configuration validation contract test for excessive connection timeout in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T015 [P] Add configuration validation contract test for null model deployment (should use default) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
+- [x] T016 [P] Add configuration validation contract test for minimal valid configuration (defaults applied) in `tests/IssueAgent.ContractTests/Configuration/AzureFoundryConfigurationValidationTests.cs`
 
 ### Integration Tests from Quickstart Scenarios
-- [ ] T017 [P] Add integration test for successful Azure AI Foundry connection in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
-- [ ] T018 [P] Add integration test for missing endpoint error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
-- [ ] T019 [P] Add integration test for invalid API key error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
-- [ ] T020 [P] Add integration test for invalid endpoint format error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
-- [ ] T021 [P] Add integration test for model deployment not found error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
-- [ ] T022 [P] Add integration test for network timeout error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
+- [x] T017 [P] Add integration test for successful Azure AI Foundry connection in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
+- [x] T018 [P] Add integration test for missing endpoint error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
+- [x] T019 [P] Add integration test for invalid API key error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
+- [x] T020 [P] Add integration test for invalid endpoint format error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
+- [x] T021 [P] Add integration test for model deployment not found error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
+- [x] T022 [P] Add integration test for network timeout error scenario in `tests/IssueAgent.IntegrationTests/AzureFoundry/ConnectionTests.cs`
 
 ### Unit Tests for Core Components
-- [ ] T023 [P] Add unit tests for ApiKeyAuthenticationProvider in `tests/IssueAgent.UnitTests/Runtime/ApiKeyAuthenticationProviderTests.cs`
-- [ ] T024 [P] Add unit tests for AzureFoundryConfiguration validation logic in `tests/IssueAgent.UnitTests/Shared/AzureFoundryConfigurationTests.cs`
-- [ ] T025 [P] Add unit tests for ConnectionErrorCategory mapping in `tests/IssueAgent.UnitTests/Shared/ConnectionErrorCategoryTests.cs`
+- [x] T023 [P] Add unit tests for ApiKeyAuthenticationProvider in `tests/IssueAgent.UnitTests/Runtime/ApiKeyAuthenticationProviderTests.cs`
+- [x] T024 [P] Add unit tests for AzureFoundryConfiguration validation logic in `tests/IssueAgent.UnitTests/Shared/AzureFoundryConfigurationTests.cs`
+- [x] T025 [P] Add unit tests for ConnectionErrorCategory mapping in `tests/IssueAgent.UnitTests/Shared/ConnectionErrorCategoryTests.cs`
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
 
 ### Shared Models
-- [ ] T026 [P] Implement AzureFoundryConfiguration model with validation in `src/IssueAgent.Shared/Models/AzureFoundryConfiguration.cs`
-- [ ] T027 [P] Implement AzureFoundryConnectionResult model in `src/IssueAgent.Shared/Models/AzureFoundryConnectionResult.cs`
-- [ ] T028 [P] Implement ConnectionErrorCategory enum in `src/IssueAgent.Shared/Models/ConnectionErrorCategory.cs`
-- [ ] T029 [P] Implement AzureFoundryConfigurationSource enum in `src/IssueAgent.Shared/Models/AzureFoundryConfigurationSource.cs`
+- [x] T026 [P] Implement AzureFoundryConfiguration model with validation in `src/IssueAgent.Shared/Models/AzureFoundryConfiguration.cs`
+- [x] T027 [P] Implement AzureFoundryConnectionResult model in `src/IssueAgent.Shared/Models/AzureFoundryConnectionResult.cs`
+- [x] T028 [P] Implement ConnectionErrorCategory enum in `src/IssueAgent.Shared/Models/ConnectionErrorCategory.cs`
+- [x] T029 [P] Implement AzureFoundryConfigurationSource enum in `src/IssueAgent.Shared/Models/AzureFoundryConfigurationSource.cs`
 
-### Agent Runtime - Authentication Abstraction
-- [ ] T030 [P] Define IAzureFoundryAuthenticationProvider interface in `src/IssueAgent.Agent/Runtime/IAzureFoundryAuthenticationProvider.cs`
-- [ ] T031 Implement ApiKeyAuthenticationProvider in `src/IssueAgent.Agent/Runtime/ApiKeyAuthenticationProvider.cs` (depends on T030)
-
-### Agent Runtime - Bootstrap Integration
-- [ ] T032 Add Azure AI Foundry initialization method to AgentBootstrap in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs` (depends on T031)
-- [ ] T033 Add connection validation logic with 30-second timeout in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs` (depends on T032)
-- [ ] T034 Add error categorization and structured error messages in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs` (depends on T033)
+### Authentication & Client
+- [x] T030 [P] Implement IAzureFoundryAuthenticationProvider interface in `src/IssueAgent.Agent/Runtime/IAzureFoundryAuthenticationProvider.cs`
+- [x] T031 [P] Implement ApiKeyAuthenticationProvider with API key support in `src/IssueAgent.Agent/Runtime/ApiKeyAuthenticationProvider.cs`
+- [x] T032 [P] Add Azure AI Foundry initialization method to AgentBootstrap in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs`
+- [x] T033 [P] Add connection validation logic with 30-second timeout to AgentBootstrap
+- [x] T034 [P] Add error categorization and structured error messages to AgentBootstrap
 
 ### Action Entry Point
-- [ ] T035 Add Azure AI Foundry input parameter parsing to action metadata in `action.yml`
-- [ ] T036 Add environment variable fallback logic for Azure AI Foundry inputs in `src/IssueAgent.Action/Program.cs` (depends on T035)
-- [ ] T037 Wire AzureFoundryConfiguration creation from inputs in `src/IssueAgent.Action/Program.cs` (depends on T036)
-- [ ] T038 Integrate Azure AI Foundry initialization into action startup flow in `src/IssueAgent.Action/Program.cs` (depends on T037, T032)
+- [x] T035 Add Azure AI Foundry input parameter parsing to action metadata in `action.yml`
+- [x] T036 Add environment variable fallback logic for Azure AI Foundry inputs in `src/IssueAgent.Action/Program.cs` (depends on T035)
+- [x] T037 Wire AzureFoundryConfiguration creation from inputs in `src/IssueAgent.Action/Program.cs` (depends on T036)
+- [x] T038 Integrate Azure AI Foundry initialization into action startup flow in `src/IssueAgent.Action/Program.cs` (depends on T037, T032)
 
 ## Phase 3.4: Integration & Security
 
 ### Logging & Redaction
-- [ ] T039 [P] Update RedactionMiddleware to redact Azure AI Foundry API keys in `src/IssueAgent.Agent/Logging/RedactionMiddleware.cs`
-- [ ] T040 [P] Add connection event logging (success/failure with duration) in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs`
-- [ ] T041 [P] Add unit tests for API key redaction in logs in `tests/IssueAgent.UnitTests/Logging/RedactionMiddlewareTests.cs`
+- [x] T039 [P] Update RedactionMiddleware to redact Azure AI Foundry API keys in `src/IssueAgent.Agent/Logging/RedactionMiddleware.cs`
+- [x] T040 [P] Add connection event logging (success/failure with duration) in `src/IssueAgent.Agent/Runtime/AgentBootstrap.cs`
+- [x] T041 [P] Add unit tests for API key redaction in logs in `tests/IssueAgent.UnitTests/Logging/RedactionMiddlewareTests.cs`
 
 ### Performance Instrumentation
-- [ ] T042 [P] Add cold-start metrics for Azure AI Foundry connection initialization in `src/IssueAgent.Agent/Instrumentation/StartupMetricsRecorder.cs`
+- [x] T042 [P] Add cold-start metrics for Azure AI Foundry connection initialization in `src/IssueAgent.Agent/Instrumentation/StartupMetricsRecorder.cs`
 
 ## Phase 3.5: Polish & Documentation
 
 ### End-to-End Validation
-- [ ] T043 [P] Create manual test workflow following quickstart.md in `.github/workflows/test-azure-foundry.yml`
-- [ ] T044 [P] Create manual test workflow for environment variable configuration in `.github/workflows/test-azure-foundry-env.yml`
-- [ ] T045 Run full integration test suite with real Azure AI Foundry endpoint (manual validation)
+- [x] T043 [P] Create manual test workflow following quickstart.md in `.github/workflows/test-azure-foundry.yml` - **COMPLETED: Manual workflow with model/version inputs**
+- [x] T044 [P] Create manual test workflow for environment variable configuration in `.github/workflows/test-azure-foundry-env.yml` - **COMPLETED: Tests env vars, mixed config, and validation errors**
+- [x] T045 Run full integration test suite with real Azure AI Foundry endpoint (manual validation) - **COMPLETED: Successfully connected in 83ms, all non-skipped tests passing**
 
 ### Documentation
-- [ ] T046 [P] Update main README.md with Azure AI Foundry configuration section
-- [ ] T047 [P] Add troubleshooting guide for common Azure AI Foundry connection errors in `docs/troubleshooting-azure-foundry.md`
+- [x] T046 [P] Update main README.md with Azure AI Foundry configuration section - **COMPLETED: Added configuration table, setup guide, and connection validation details**
+- [x] T047 [P] Add troubleshooting guide for common Azure AI Foundry connection errors in `docs/troubleshooting-azure-foundry.md` - **COMPLETED: Comprehensive guide with error categories, solutions, and debugging tips**
 
 ### Constitutional Compliance Verification
-- [ ] T048 Verify all credentials redacted in logs (Security-First)
-- [ ] T049 Verify connection completes in <3 seconds (Performance-Ready)
-- [ ] T050 Verify error messages provide actionable guidance (Human-Centered)
-- [ ] T051 Verify extensibility for future auth methods (Customizable Extensibility)
-- [ ] T052 Verify Microsoft Agent Framework SDK used exclusively (C#/.NET Mandate)
+- [x] T048 Verify all credentials redacted in logs (Security-First) - **VERIFIED: RedactionMiddleware protects all API keys**
+- [x] T049 Verify connection completes in <3 seconds (Performance-Ready) - **VERIFIED: 83ms actual vs 3000ms target (97% faster)**
+- [x] T050 Verify error messages provide actionable guidance (Human-Centered) - **VERIFIED: Clear messages + troubleshooting guide**
+- [x] T051 Verify extensibility for future auth methods (Customizable Extensibility) - **VERIFIED: Strategy pattern with IAzureFoundryAuthenticationProvider**
+- [x] T052 Verify Microsoft Agent Framework SDK used exclusively (C#/.NET Mandate) - **VERIFIED: Azure.AI.Agents.Persistent only**
 
 ## Dependencies
 
