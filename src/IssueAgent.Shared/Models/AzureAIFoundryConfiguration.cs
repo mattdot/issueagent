@@ -8,7 +8,12 @@ namespace IssueAgent.Shared.Models;
 public class AzureAIFoundryConfiguration
 {
     private const string DefaultModelDeploymentName = "gpt-5-mini";
-    private const string DefaultApiVersion = "2025-04-01-preview";
+    
+    /// <summary>
+    /// Default API version for Azure AI Foundry connections.
+    /// </summary>
+    public const string DefaultApiVersion = "2025-04-01-preview";
+    
     private static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaxConnectionTimeout = TimeSpan.FromMinutes(5);
     

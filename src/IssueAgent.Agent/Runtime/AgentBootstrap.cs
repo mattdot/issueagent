@@ -219,7 +219,7 @@ public static class AgentBootstrap
                 // API version unsupported
                 stopwatch.Stop();
                 return AzureAIFoundryConnectionResult.Failure(
-                    $"API version '{configuration.ApiVersion ?? "2025-04-01-preview"}' is not supported by the endpoint. Use a supported version like '2025-04-01-preview'.",
+                    $"API version '{configuration.ApiVersion ?? AzureAIFoundryConfiguration.DefaultApiVersion}' is not supported by the endpoint. Use a supported version like '{AzureAIFoundryConfiguration.DefaultApiVersion}'.",
                     ConnectionErrorCategory.ApiVersionUnsupported,
                     attemptedEndpoint,
                     stopwatch.Elapsed);
@@ -255,11 +255,11 @@ public static class AgentBootstrap
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
-            // External cancellation (user/system requested)
+            // External cancellation (user/system requested) - not a timeout
             stopwatch.Stop();
             return AzureAIFoundryConnectionResult.Failure(
                 "Connection attempt was cancelled by the caller.",
-                ConnectionErrorCategory.NetworkTimeout,
+                ConnectionErrorCategory.UnknownError,
                 attemptedEndpoint,
                 stopwatch.Elapsed);
         }

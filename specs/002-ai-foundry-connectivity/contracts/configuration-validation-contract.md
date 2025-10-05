@@ -1,31 +1,6 @@
-# Azure Foundry Configuration Contract
+# Azure AI Foundry Configuration Contract
 
-## Contract: AzureFoundry#### Invalid Endp#### Invalid Endpoint (Missing Domain)
-```json
-{
- #### Invalid Model Deployment Name (Speci#### Excessive Connection Timeout
-```json
-{
-  "endpoint": "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-  "apiKey": "abcdefghijklmnopqrstuvwxyz012345",
-  "modelDeploymentName": "gpt-5-mini",
-  "connectionTimeout": "00:05:00"
-}cters)
-```json
-{
-  "endpoint": "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-  "apiKey": "abcdefghijklmnopqrstuvwxyz012345",
-  "modelDeploymentName": "gpt-5-mini@latest"
-}int": "https://example.com/wrong",
-  "apiKey": "abcdefghijklmnopqrstuvwxyz012345",
-  "modelDeploymentName": "gpt-5-mini"
-}TP instead of HTTPS)
-```json
-{
-  "endpoint": "http://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-  "apiKey": "abcdefghijklmnopqrstuvwxyz012345",
-  "modelDeploymentName": "gpt-5-mini"
-}ration Validation
+## Contract: Azure AI Foundry Configuration Validation
 
 ### Purpose
 Define validation rules for Azure AI Foundry connection configuration to ensure all required parameters are provided in the correct format before attempting connection.

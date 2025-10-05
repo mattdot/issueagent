@@ -66,12 +66,12 @@ if (string.IsNullOrEmpty(endpoint) || string.IsNullOrEmpty(apiKey))
 }
 
 // Create configuration
-var config = new AzureFoundryConfiguration
+var config = new AzureAIFoundryConfiguration
 {
     Endpoint = endpoint,
     ApiKey = apiKey,
     ModelDeploymentName = "gpt-4o-mini",
-    ApiVersion = "2024-05-01-preview",
+    ApiVersion = AzureAIFoundryConfiguration.DefaultApiVersion,
     ConnectionTimeout = TimeSpan.FromSeconds(30)
 };
 
@@ -93,10 +93,19 @@ var sw = Stopwatch.StartNew();
 
 try
 {
-    await AgentBootstrap.InitializeAzureFoundryAsync(config, CancellationToken.None);
+    var result = await AgentBootstrap.InitializeAzureAIFoundryAsync(config, CancellationToken.None);
     sw.Stop();
     
-    var endpointSuffix = new Uri(endpoint).Host.Split('.')[0];
+    if (!result.IsSuccess)
+    {
+        Console.WriteLine($"❌ FAILED: Connection failed after {sw.ElapsedMilliseconds}ms");
+        Console.WriteLine($"   Error: {result.ErrorMessage}");
+        Console.WriteLine($"   Category: {result.ErrorCategory}");
+        return 1;
+    }
+    
+    var endpointUri = new Uri(endpoint);
+    var endpointSuffix = endpointUri.AbsolutePath.Split('/').LastOrDefault() ?? endpointUri.Host.Split('.')[0];
     Console.WriteLine($"✅ SUCCESS: Connected to Azure AI Foundry");
     Console.WriteLine($"   Endpoint: ...{endpointSuffix}");
     Console.WriteLine($"   Duration: {sw.ElapsedMilliseconds}ms");
@@ -111,12 +120,9 @@ try
 catch (Exception ex)
 {
     sw.Stop();
-    Console.WriteLine($"❌ FAILED: Connection failed after {sw.ElapsedMilliseconds}ms");
+    Console.WriteLine($"❌ FAILED: Unexpected exception after {sw.ElapsedMilliseconds}ms");
     Console.WriteLine($"   Error: {ex.GetType().Name}");
     Console.WriteLine($"   Message: {ex.Message}");
-    
-    // Can't use ConnectionErrorCategory.FromException since it's just an enum
-    Console.WriteLine($"   Stack: {ex.StackTrace?.Split('\n')[0] ?? "N/A"}");
     
     return 1;
 }

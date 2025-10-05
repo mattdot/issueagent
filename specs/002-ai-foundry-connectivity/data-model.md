@@ -5,9 +5,9 @@ This document defines the data structures and entities required for Azure AI Fou
 
 ## Core Entities
 
-### 1. AzureFoundryConfiguration
+### 1. AzureAIFoundryConfiguration
 **Purpose**: Encapsulates all configuration parameters required to connect to Azure AI Foundry  
-**Location**: `src/IssueAgent.Shared/Models/AzureFoundryConfiguration.cs`
+**Location**: `src/IssueAgent.Shared/Models/AzureAIFoundryConfiguration.cs`
 
 **Fields**:
 | Field | Type | Required | Default | Validation | Description |
@@ -30,9 +30,9 @@ This document defines the data structures and entities required for Azure AI Fou
 - Used by `IssueAgent.Agent.Runtime.AgentBootstrap` for initialization
 - Populated from `IssueAgent.Action.Program` action inputs
 
-### 2. AzureFoundryConnectionResult
+### 2. AzureAIFoundryConnectionResult
 **Purpose**: Represents the outcome of an Azure AI Foundry connection attempt  
-**Location**: `src/IssueAgent.Shared/Models/AzureFoundryConnectionResult.cs`
+**Location**: `src/IssueAgent.Shared/Models/AzureAIFoundryConnectionResult.cs`
 
 **Fields**:
 | Field | Type | Required | Description |
@@ -68,9 +68,9 @@ This document defines the data structures and entities required for Azure AI Fou
 
 **Usage**: Maps to specific error messages in error handling logic
 
-### 4. IAzureFoundryAuthenticationProvider (Interface)
+### 4. IAzureAIFoundryAuthenticationProvider (Interface)
 **Purpose**: Abstraction for different authentication methods (extensibility)  
-**Location**: `src/IssueAgent.Agent/Runtime/IAzureFoundryAuthenticationProvider.cs`
+**Location**: `src/IssueAgent.Agent/Runtime/IAzureAIFoundryAuthenticationProvider.cs`
 
 **Methods**:
 ```csharp
@@ -92,9 +92,9 @@ string GetAuthenticationMethodName();
 
 ## Supporting Types
 
-### 5. AzureFoundryConfigurationSource (Enum)
+### 5. AzureAIFoundryConfigurationSource (Enum)
 **Purpose**: Tracks where configuration values originated  
-**Location**: `src/IssueAgent.Shared/Models/AzureFoundryConfigurationSource.cs`
+**Location**: `src/IssueAgent.Shared/Models/AzureAIFoundryConfigurationSource.cs`
 
 **Values**:
 - `ActionInput`: Value from GitHub Actions input parameter
@@ -115,7 +115,7 @@ string GetAuthenticationMethodName();
            │ creates
            ▼
 ┌──────────────────────────────┐
-│ AzureFoundryConfiguration    │
+│ AzureAIFoundryConfiguration    │
 │                              │
 │ - Endpoint                   │
 │ - ApiKey                     │
@@ -134,7 +134,7 @@ string GetAuthenticationMethodName();
            │ creates
            ▼
 ┌──────────────────────────────┐
-│ AzureFoundryConnectionResult │
+│ AzureAIFoundryConnectionResult │
 │                              │
 │ - IsSuccess                  │
 │ - Client / ErrorMessage      │
@@ -146,18 +146,18 @@ string GetAuthenticationMethodName();
 
 ### Successful Connection Flow
 1. **Input** → `Program` parses action inputs and environment variables
-2. **Validation** → Create `AzureFoundryConfiguration` with validation
+2. **Validation** → Create `AzureAIFoundryConfiguration` with validation
 3. **Bootstrap** → `AgentBootstrap.InitializeAzureFoundryAsync()` called
 4. **Authentication** → `ApiKeyAuthenticationProvider.CreateClientAsync()` instantiates client
 5. **Validation** → Attempt to validate connection (lightweight API call)
-6. **Result** → `AzureFoundryConnectionResult` with IsSuccess=true and populated Client
+6. **Result** → `AzureAIFoundryConnectionResult` with IsSuccess=true and populated Client
 7. **Usage** → Client stored in agent context for issue processing
 
 ### Failed Connection Flow
 1. **Input** → `Program` parses action inputs and environment variables
 2. **Validation** → Validation failure OR configuration missing
 3. **Error Categorization** → Exception mapped to `ConnectionErrorCategory`
-4. **Result** → `AzureFoundryConnectionResult` with IsSuccess=false, ErrorMessage, and ErrorCategory
+4. **Result** → `AzureAIFoundryConnectionResult` with IsSuccess=false, ErrorMessage, and ErrorCategory
 5. **Logging** → Error logged with category and actionable guidance
 6. **Termination** → Action fails with exit code 1
 
