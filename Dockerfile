@@ -26,7 +26,7 @@ RUN dotnet publish src/IssueAgent.Action/IssueAgent.Action.csproj \
     --no-restore
 
 ########## Runtime ##########
-FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine AS runtime
+FROM mcr.microsoft.com/dotnet/runtime-deps:9.0-alpine AS runtime
 
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
