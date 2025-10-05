@@ -1,5 +1,5 @@
 {
-	"name": ".NET with uv/uvx",
+	"name": "IssueAgent Dev Container",
 	"image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/uv:1": {},
@@ -15,7 +15,8 @@
 			"extensions": [
 				"ms-dotnettools.csdevkit",
 				"ms-dotnettools.csharp",
-				"ms-python.python"
+				"GitHub.copilot",
+				"GitHub.copilot-chat"
 			],
 			"settings": {
 				"dotnet.acquisitionContext": {
@@ -28,6 +29,6 @@
 	"mounts": [
 		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
 	],
-	"postCreateCommand": "dotnet --version && uv --version && uv tool install specify-cli --from git+https://github.com/github/spec-kit.git && dotnet tool install --global NuGet.Mcp.Server",
+	"postCreateCommand": "dotnet --version && uv --version && uv tool install specify-cli --from git+https://github.com/github/spec-kit.git",
 	"remoteUser": "vscode"
 }
