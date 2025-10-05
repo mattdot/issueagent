@@ -16,7 +16,13 @@
 				"ms-dotnettools.csdevkit",
 				"ms-dotnettools.csharp",
 				"ms-python.python"
-			]
+			],
+			"settings": {
+				"dotnet.acquisitionContext": {
+					"version": "8.0"
+				},
+				"dotnet.defaultSolution": "IssueAgent.sln"
+			}
 		}
 	},
 	"mounts": [
