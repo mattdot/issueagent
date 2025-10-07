@@ -6,7 +6,7 @@ Thank you for your interest in contributing to IssueAgent! This document provide
 
 ### Prerequisites
 
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - [Docker](https://www.docker.com/get-started) (for building and testing the action image)
 - [VS Code](https://code.visualstudio.com/) with Dev Containers extension (recommended)
 
@@ -14,7 +14,7 @@ Thank you for your interest in contributing to IssueAgent! This document provide
 
 This repository includes a VS Code Dev Container that provides a complete development environment with:
 
-- .NET 8.0 SDK
+- .NET 9.0 SDK
 - Docker-in-Docker support
 - GitHub spec-kit tooling (`specify-cli`)
 - Common VS Code extensions for .NET development
@@ -88,7 +88,7 @@ docker build -f Dockerfile -t issueagent:local .
 ```
 
 The build uses a multi-stage Dockerfile:
-- **Build stage**: Compiles with .NET 8 AOT (Ahead-of-Time) compilation
+- **Build stage**: Compiles with .NET 9 AOT (Ahead-of-Time) compilation
 - **Runtime stage**: Minimal Alpine Linux image with the compiled binary
 
 ### Running the Action Locally
@@ -146,7 +146,7 @@ docker run --rm \
 
 ## Performance Expectations
 
-The action is designed for fast startup using .NET 8 AOT compilation:
+The action is designed for fast startup using .NET 9 AOT compilation:
 
 - **Startup time**: < 1 second (cold start on GitHub-hosted runners)
 - **Total execution**: < 30 seconds (GitHub Actions requirement)
