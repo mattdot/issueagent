@@ -1,6 +1,6 @@
 {
 	"name": "IssueAgent Dev Container",
-	"image": "mcr.microsoft.com/devcontainers/dotnet:1-8.0-bookworm",
+	"image": "mcr.microsoft.com/devcontainers/dotnet:1-9.0-bookworm",
 	"features": {
 		"ghcr.io/devcontainers-contrib/features/uv:1": {},
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -20,7 +20,7 @@
 			],
 			"settings": {
 				"dotnet.acquisitionContext": {
-					"version": "8.0"
+					"version": "9.0"
 				},
 				"dotnet.defaultSolution": "IssueAgent.sln"
 			}
