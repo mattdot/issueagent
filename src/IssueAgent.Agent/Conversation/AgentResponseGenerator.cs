@@ -36,25 +36,21 @@ public class AgentResponseGenerator
         ResponseDecisionResult decision,
         CancellationToken cancellationToken = default)
     {
-        // If no AI client configured, fall back to simple responses
-        if (_agentClient == null || string.IsNullOrWhiteSpace(_modelDeploymentName))
+        // Azure AI Foundry configuration is required
+        if (_agentClient == null)
         {
-            _logger?.LogWarning("Azure AI Foundry not configured - using simple fallback responses");
-            return GenerateSimpleResponse(history, decision);
+            throw new InvalidOperationException("Azure AI Foundry client is not configured. Please ensure AZURE_FOUNDRY_PROJECT_ENDPOINT is set and credentials are available.");
         }
 
-        try
+        if (string.IsNullOrWhiteSpace(_modelDeploymentName))
         {
-            _logger?.LogInformation("Generating AI response using Azure AI Foundry with model {ModelDeployment}", _modelDeploymentName);
-            _logger?.LogInformation("Conversation context: {MessageCount} messages", history.Count);
-            
-            return await GenerateAIResponseAsync(history, cancellationToken).ConfigureAwait(false);
+            throw new InvalidOperationException("Model deployment name is not configured. Please ensure AZURE_FOUNDRY_PROJECT_DEPLOYMENT_NAME is set.");
         }
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, "Error generating AI response - using fallback");
-            return GenerateSimpleResponse(history, decision);
-        }
+
+        _logger?.LogInformation("Generating AI response using Azure AI Foundry with model {ModelDeployment}", _modelDeploymentName);
+        _logger?.LogInformation("Conversation context: {MessageCount} messages", history.Count);
+        
+        return await GenerateAIResponseAsync(history, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<string> GenerateAIResponseAsync(
@@ -139,41 +135,4 @@ public class AgentResponseGenerator
         return sb.ToString();
     }
 
-    private string GenerateSimpleResponse(IReadOnlyList<ConversationMessage> history, ResponseDecisionResult decision)
-    {
-        // Generate simple acknowledgment based on context
-        var latestMessage = history[^1];
-        
-        // Build a contextual response by analyzing the conversation
-        var hasQuestions = history.Any(m => m.Role == Shared.Models.MessageRole.Assistant && m.Text.Contains('?'));
-        var previousAgentMessages = history.Count(m => m.Role == Shared.Models.MessageRole.Assistant);
-        
-        if (decision.Decision == ResponseDecision.MustRespond)
-        {
-            if (previousAgentMessages == 0)
-            {
-                // First interaction
-                return "Thanks for mentioning me! I'm here to help improve this issue and guide you toward writing world-class user stories and requirements.\n\n" +
-                       "To get started, I'd like to understand:\n" +
-                       "- What is the user story or goal you're trying to achieve?\n" +
-                       "- Who are the actors (users/systems) involved?\n" +
-                       "- What are the measurable acceptance criteria?\n" +
-                       "- Are there any constraints or dependencies I should know about?";
-            }
-            else
-            {
-                // Subsequent interaction
-                return "I'm reviewing your message. To help you effectively:\n\n" +
-                       "- Please provide any additional context or clarifications\n" +
-                       "- Ensure acceptance criteria are specific and measurable\n" +
-                       "- List any assumptions or constraints\n\n" +
-                       "Let me know what specific aspect you'd like me to help refine.";
-            }
-        }
-        else
-        {
-            // This shouldn't happen with current logic, but handle gracefully
-            return "Thanks for the update! Let me know if you need help refining the requirements or acceptance criteria.";
-        }
-    }
 }
