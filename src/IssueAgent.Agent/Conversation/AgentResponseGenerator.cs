@@ -61,30 +61,62 @@ public class AgentResponseGenerator
         IReadOnlyList<ConversationMessage> history,
         CancellationToken cancellationToken)
     {
-        // Attempted implementation with Microsoft.Agents.AI 1.0.0-preview.251007.1
-        // and Azure.AI.Agents.Persistent 1.2.0-beta.1:
-        //
-        // AIAgent agent = await _agentClient!.CreateAIAgentAsync(
-        //     model: _modelDeploymentName!,
-        //     name: "issueagent",
-        //     instructions: IssueAgentSystemPrompt.Prompt,
-        //     cancellationToken: cancellationToken);
-        //
-        // However, CreateAIAgentAsync extension method not found in compilation.
-        // DLL contains "CreateAIAgent" (without Async) but signature/usage unclear.
-        //
-        // Alternative approach from second example uses:
-        // new AzureOpenAIClient(...).GetChatClient(...).CreateAIAgent(...)
-        //
-        // Awaiting clarification on correct API usage.
+        // Create a persistent agent on the server
+        var agentResult = await _agentClient!.Administration.CreateAgentAsync(
+            model: _modelDeploymentName!,
+            name: "issueagent",
+            instructions: IssueAgentSystemPrompt.Prompt,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
         
-        _logger?.LogWarning("AI Agent integration pending API clarification");
-        _logger?.LogInformation("Using Microsoft.Agents.AI 1.0.0-preview.251007.1, Azure.AI.Agents.Persistent 1.2.0-beta.1");
+        if (!agentResult.HasValue)
+        {
+            throw new InvalidOperationException("Failed to create agent - no value returned");
+        }
         
-        await Task.CompletedTask;
-        throw new NotImplementedException(
-            "Extension methods from examples not found. " +
-            "Awaiting clarification on API usage - see PR comments.");
+        var agentId = agentResult.Value.Id;
+        
+        try
+        {
+            _logger?.LogInformation("Created persistent agent with ID: {AgentId}", agentId);
+            
+            // Convert PersistentAgentsClient to IChatClient using the agent
+            var chatClient = _agentClient.AsIChatClient(agentId);
+            
+            // Create an AI agent from the chat client
+            var agent = chatClient.CreateAIAgent(new ChatClientAgentOptions
+            {
+                Name = "issueagent",
+                Instructions = IssueAgentSystemPrompt.Prompt
+            });
+            
+            // Build conversation prompt from history
+            var prompt = BuildConversationPrompt(history);
+            
+            // Get a new thread for this conversation
+            var thread = agent.GetNewThread();
+            
+            // Run the agent
+            _logger?.LogDebug("Running agent with conversation context...");
+            var runResponse = await agent.RunAsync<string>(prompt, thread, serializerOptions: null, options: null, useJsonSchemaResponseFormat: null, cancellationToken: cancellationToken).ConfigureAwait(false);
+            
+            _logger?.LogInformation("AI response generated successfully");
+            
+            // Extract the response text
+            return runResponse.Text ?? string.Empty;
+        }
+        finally
+        {
+            // Clean up the agent
+            try
+            {
+                await _agentClient.Administration.DeleteAgentAsync(agentId, cancellationToken).ConfigureAwait(false);
+                _logger?.LogDebug("Cleaned up agent {AgentId}", agentId);
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogWarning(ex, "Failed to clean up agent {AgentId}", agentId);
+            }
+        }
     }
 
     private string BuildConversationPrompt(IReadOnlyList<ConversationMessage> history)
