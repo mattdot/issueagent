@@ -53,6 +53,9 @@ public static class AgentBootstrap
 
         // Initialize Azure AI Foundry connection if configured
         var azureFoundryConfig = LoadAzureAIFoundryConfiguration();
+        Azure.AI.Agents.Persistent.PersistentAgentsClient? agentClient = null;
+        string? modelDeploymentName = null;
+        
         if (azureFoundryConfig != null)
         {
             logger.LogInformation("Initializing Azure AI Foundry connection...");
@@ -72,6 +75,9 @@ public static class AgentBootstrap
                 "Azure AI Foundry connection established in {Duration}ms to endpoint {EndpointSuffix}",
                 connectionResult.Duration.TotalMilliseconds,
                 connectionResult.AttemptedEndpoint);
+            
+            agentClient = connectionResult.Client;
+            modelDeploymentName = azureFoundryConfig.ModelDeploymentName;
         }
         else
         {
@@ -89,6 +95,13 @@ public static class AgentBootstrap
         var historyBuilder = new IssueAgent.Agent.Conversation.ConversationHistoryBuilder(botLogin);
         var decisionEngine = new IssueAgent.Agent.Conversation.ResponseDecisionEngine();
         
+        // Create AI response generator
+        var responseGeneratorLogger = loggerFactory.CreateLogger<IssueAgent.Agent.Conversation.AgentResponseGenerator>();
+        var responseGenerator = new IssueAgent.Agent.Conversation.AgentResponseGenerator(
+            agentClient,
+            modelDeploymentName,
+            responseGeneratorLogger);
+        
         // Create comment poster for posting responses
         var commentPosterLogger = loggerFactory.CreateLogger<IssueAgent.Agent.GitHub.GitHubCommentPoster>();
         var apiBaseUrl = Environment.GetEnvironmentVariable("GITHUB_API_URL");
@@ -101,6 +114,7 @@ public static class AgentBootstrap
             metricsRecorder,
             historyBuilder,
             decisionEngine,
+            responseGenerator,
             commentPoster,
             agentLogger);
 

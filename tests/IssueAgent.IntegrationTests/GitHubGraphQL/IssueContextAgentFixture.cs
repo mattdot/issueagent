@@ -34,6 +34,7 @@ public sealed class IssueContextAgentFixture : IAsyncLifetime
         var tokenGuard = new GitHubTokenGuard();
         var historyBuilder = new IssueAgent.Agent.Conversation.ConversationHistoryBuilder("github-actions[bot]");
         var decisionEngine = new IssueAgent.Agent.Conversation.ResponseDecisionEngine();
+        var responseGenerator = new IssueAgent.Agent.Conversation.AgentResponseGenerator();
         
         return new IssueContextAgent(
             tokenGuard, 
@@ -41,6 +42,7 @@ public sealed class IssueContextAgentFixture : IAsyncLifetime
             MetricsRecorder,
             historyBuilder,
             decisionEngine,
+            responseGenerator,
             commentPoster: null,
             logger: null);
     }

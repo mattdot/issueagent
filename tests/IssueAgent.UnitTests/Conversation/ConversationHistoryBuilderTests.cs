@@ -37,7 +37,7 @@ public class ConversationHistoryBuilderTests
         var builder = new ConversationHistoryBuilder("github-actions[bot]");
         var comments = new[]
         {
-            CommentSnapshot.Create("C1", "github-actions[bot]", "Bot comment", DateTime.UtcNow)
+            CommentSnapshot.Create("C1", "github-actions[bot]", "Bot comment <!-- issueagent-signature -->", DateTime.UtcNow)
         };
         
         var issue = IssueSnapshot.Create(
@@ -57,12 +57,12 @@ public class ConversationHistoryBuilderTests
     }
 
     [Fact]
-    public void BuildHistory_ShouldIdentifySignatureCommentsAsAssistant()
+    public void BuildHistory_ShouldNotIdentifyBotCommentWithoutSignatureAsAssistant()
     {
-        var builder = new ConversationHistoryBuilder("some-other-bot");
+        var builder = new ConversationHistoryBuilder("github-actions[bot]");
         var comments = new[]
         {
-            CommentSnapshot.Create("C1", "human-user", "Comment with <!-- issueagent-signature --> marker", DateTime.UtcNow)
+            CommentSnapshot.Create("C1", "github-actions[bot]", "Bot comment without signature", DateTime.UtcNow)
         };
         
         var issue = IssueSnapshot.Create(
@@ -77,8 +77,33 @@ public class ConversationHistoryBuilderTests
         var history = builder.BuildHistory(issue);
 
         history.Should().HaveCount(2);
-        history[1].Role.Should().Be(MessageRole.Assistant);
-        history[1].AuthorName.Should().Be("issueagent");
+        history[1].Role.Should().Be(MessageRole.User);
+        history[1].AuthorName.Should().Be("github-actions[bot]");
+    }
+
+    [Fact]
+    public void BuildHistory_ShouldIdentifySignatureCommentsFromOtherBotAsUser()
+    {
+        var builder = new ConversationHistoryBuilder("github-actions[bot]");
+        var comments = new[]
+        {
+            CommentSnapshot.Create("C1", "some-other-bot", "Comment with <!-- issueagent-signature --> marker", DateTime.UtcNow)
+        };
+        
+        var issue = IssueSnapshot.Create(
+            "ISSUE_1",
+            42,
+            "Test",
+            "Body",
+            DateTime.UtcNow,
+            "user1",
+            comments);
+
+        var history = builder.BuildHistory(issue);
+
+        history.Should().HaveCount(2);
+        history[1].Role.Should().Be(MessageRole.User);
+        history[1].AuthorName.Should().Be("some-other-bot");
     }
 
     [Fact]

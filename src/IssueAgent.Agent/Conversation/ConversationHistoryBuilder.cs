@@ -60,18 +60,8 @@ public class ConversationHistoryBuilder
 
     private bool IsAgentComment(CommentSnapshot comment)
     {
-        // Check if authored by the workflow identity (bot)
-        if (string.Equals(comment.AuthorLogin, _botLogin, StringComparison.OrdinalIgnoreCase))
-        {
-            return true;
-        }
-
-        // Check if contains the signature marker
-        if (comment.Body.Contains(SignatureMarker, StringComparison.Ordinal))
-        {
-            return true;
-        }
-
-        return false;
+        // Check if both authored by the workflow identity (bot) AND contains the signature marker
+        return string.Equals(comment.AuthorLogin, _botLogin, StringComparison.OrdinalIgnoreCase)
+            && comment.Body.Contains(SignatureMarker, StringComparison.Ordinal);
     }
 }

@@ -80,9 +80,9 @@ public class GitHubCommentPoster
             var formattedBody = AgentHeader + body.Trim() + SignatureFooter;
             var url = $"/repos/{owner}/{repo}/issues/{issueNumber}/comments";
 
-            // Use string interpolation for simple JSON to avoid AOT issues
-            var escapedBody = formattedBody.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
-            var json = $"{{\"body\":\"{escapedBody}\"}}";
+            // Use source-generated JSON for AOT compatibility
+            var requestBody = new GitHubCommentRequest { Body = formattedBody };
+            var json = JsonSerializer.Serialize(requestBody, GitHubCommentJsonContext.Default.GitHubCommentRequest);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             _logger.LogInformation("Posting comment to issue #{IssueNumber} in {Owner}/{Repo}", issueNumber, owner, repo);
@@ -106,24 +106,16 @@ public class GitHubCommentPoster
 
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             
-            // Parse response manually to avoid AOT issues
-            string? commentId = null;
-            string? commentUrl = null;
+            // Parse response using source-generated JSON
+            var responseData = JsonSerializer.Deserialize(responseContent, GitHubCommentJsonContext.Default.GitHubCommentResponse);
 
-            using (var doc = JsonDocument.Parse(responseContent))
-            {
-                var root = doc.RootElement;
-                commentId = root.TryGetProperty("node_id", out var idElement) ? idElement.GetString() : null;
-                commentUrl = root.TryGetProperty("html_url", out var urlElement) ? urlElement.GetString() : null;
-            }
-
-            _logger.LogInformation("Successfully posted comment: {CommentUrl}", commentUrl);
+            _logger.LogInformation("Successfully posted comment: {CommentUrl}", responseData?.HtmlUrl);
 
             return new PostCommentResult
             {
                 Success = true,
-                CommentId = commentId,
-                CommentUrl = commentUrl
+                CommentId = responseData?.NodeId,
+                CommentUrl = responseData?.HtmlUrl
             };
         }
         catch (Exception ex)

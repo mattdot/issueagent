@@ -18,6 +18,7 @@ public class IssueContextAgent
     private readonly StartupMetricsRecorder _metricsRecorder;
     private readonly ConversationHistoryBuilder _historyBuilder;
     private readonly ResponseDecisionEngine _decisionEngine;
+    private readonly AgentResponseGenerator _responseGenerator;
     private readonly GitHubCommentPoster? _commentPoster;
     private readonly ILogger<IssueContextAgent>? _logger;
 
@@ -27,6 +28,7 @@ public class IssueContextAgent
         StartupMetricsRecorder metricsRecorder,
         ConversationHistoryBuilder historyBuilder,
         ResponseDecisionEngine decisionEngine,
+        AgentResponseGenerator responseGenerator,
         GitHubCommentPoster? commentPoster = null,
         ILogger<IssueContextAgent>? logger = null)
     {
@@ -35,6 +37,7 @@ public class IssueContextAgent
         _metricsRecorder = metricsRecorder ?? throw new ArgumentNullException(nameof(metricsRecorder));
         _historyBuilder = historyBuilder ?? throw new ArgumentNullException(nameof(historyBuilder));
         _decisionEngine = decisionEngine ?? throw new ArgumentNullException(nameof(decisionEngine));
+        _responseGenerator = responseGenerator ?? throw new ArgumentNullException(nameof(responseGenerator));
         _commentPoster = commentPoster;
         _logger = logger;
     }
@@ -65,7 +68,7 @@ public class IssueContextAgent
             var history = _historyBuilder.BuildHistory(result.Issue);
             _logger?.LogInformation("Built conversation history with {MessageCount} messages", history.Count);
 
-            // Decide if we should respond
+            // Decide if we should respond based on @mentions
             var decision = _decisionEngine.ShouldRespond(history);
             _logger?.LogInformation("Response decision: {Decision} - {Reason}", decision.Decision, decision.Reason);
 
@@ -75,14 +78,12 @@ public class IssueContextAgent
                 return result;
             }
 
-            // If we should respond, post a comment
-            if (_commentPoster != null && decision.Decision != ResponseDecision.Skip)
+            // If we should respond, generate response using AI and post comment
+            if (_commentPoster != null)
             {
-                _logger?.LogInformation("Posting response to issue #{IssueNumber}", result.Issue.Number);
+                _logger?.LogInformation("Generating AI response for issue #{IssueNumber}", result.Issue.Number);
                 
-                // For MVP, we'll generate a simple response
-                // In the future, this would call Azure AI Foundry to generate a proper response
-                var responseBody = GenerateSimpleResponse(history, decision);
+                var responseBody = await _responseGenerator.GenerateResponseAsync(history, decision, cancellationToken).ConfigureAwait(false);
 
                 var postResult = await _commentPoster.PostCommentAsync(
                     request.Owner,
@@ -110,28 +111,6 @@ public class IssueContextAgent
         catch (Exception ex)
         {
             return IssueContextResult.UnexpectedError(request.RunId, request.EventType, ex.Message);
-        }
-    }
-
-    private string GenerateSimpleResponse(System.Collections.Generic.IReadOnlyList<ConversationMessage> history, ResponseDecisionResult decision)
-    {
-        // MVP: Generate a simple acknowledgment response
-        // In the future, this would use Azure AI Foundry with the system prompt
-        var latestMessage = history[^1];
-        
-        if (decision.Decision == ResponseDecision.MustRespond)
-        {
-            return $"Thanks for mentioning me! I'm here to help improve this issue.\n\n" +
-                   $"I can see you're working on: {latestMessage.Text.Substring(0, Math.Min(100, latestMessage.Text.Length))}...\n\n" +
-                   $"To provide better assistance, I'll need to understand:\n" +
-                   $"- What is the user story or goal?\n" +
-                   $"- What are the acceptance criteria?\n" +
-                   $"- Are there any constraints or dependencies?";
-        }
-        else
-        {
-            return $"Thanks for the update! I've noted your response.\n\n" +
-                   $"Let me know if you need help refining the requirements or acceptance criteria.";
         }
     }
 }

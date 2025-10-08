@@ -41,41 +41,7 @@ public class ResponseDecisionEngineTests
     }
 
     [Fact]
-    public void ShouldRespond_WithSemanticFollowUp_ReturnsShouldRespond()
-    {
-        var engine = new ResponseDecisionEngine();
-        var now = DateTime.UtcNow;
-        var history = new List<ConversationMessage>
-        {
-            ConversationMessage.Create("M1", MessageRole.User, "user1", "Need help with issue", now.AddMinutes(-10)),
-            ConversationMessage.Create("M2", MessageRole.Assistant, "issueagent", "Can you provide the acceptance criteria?", now.AddMinutes(-5)),
-            ConversationMessage.Create("M3", MessageRole.User, "user1", "Yes, here are the acceptance criteria: 1. Must support login 2. Must be secure", now)
-        };
-
-        var decision = engine.ShouldRespond(history);
-
-        decision.Decision.Should().Be(ResponseDecision.ShouldRespond);
-        decision.Reason.Should().Contain("semantic follow-up");
-    }
-
-    [Fact]
-    public void ShouldRespond_AckOnly_ReturnsSkip()
-    {
-        var engine = new ResponseDecisionEngine();
-        var now = DateTime.UtcNow;
-        var history = new List<ConversationMessage>
-        {
-            ConversationMessage.Create("M1", MessageRole.Assistant, "issueagent", "What do you think?", now.AddMinutes(-5)),
-            ConversationMessage.Create("M2", MessageRole.User, "user1", "thanks", now)
-        };
-
-        var decision = engine.ShouldRespond(history);
-
-        decision.Decision.Should().Be(ResponseDecision.Skip);
-    }
-
-    [Fact]
-    public void ShouldRespond_NoMentionNoSemanticFollowUp_ReturnsSkip()
+    public void ShouldRespond_NoMention_ReturnsSkip()
     {
         var engine = new ResponseDecisionEngine();
         var history = new List<ConversationMessage>
@@ -86,7 +52,7 @@ public class ResponseDecisionEngineTests
         var decision = engine.ShouldRespond(history);
 
         decision.Decision.Should().Be(ResponseDecision.Skip);
-        decision.Reason.Should().Contain("No mention or semantic follow-up");
+        decision.Reason.Should().Contain("No mention");
     }
 
     [Fact]
