@@ -462,6 +462,16 @@ public static class AgentBootstrap
 
     private static bool ShouldSkipExecution(string eventName, JsonElement payload)
     {
+        // Check if the issue is actually a pull request
+        // PRs are a special type of issue in GitHub, but we should not process them
+        if (payload.TryGetProperty("issue", out var issueElement))
+        {
+            if (issueElement.TryGetProperty("pull_request", out _))
+            {
+                return true;
+            }
+        }
+
         // Only check for issue_comment events
         if (!string.Equals(eventName, "issue_comment", StringComparison.OrdinalIgnoreCase))
         {

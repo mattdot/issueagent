@@ -196,6 +196,80 @@ public class AgentBootstrapTests
         result.Should().BeTrue();
     }
 
+    [Fact]
+    public void ShouldSkipExecution_ReturnsTrue_WhenIssueIsPullRequest_ForIssuesEvent()
+    {
+        var payload = JsonDocument.Parse(@"{
+            ""issue"": {
+                ""number"": 123,
+                ""pull_request"": {
+                    ""url"": ""https://api.github.com/repos/owner/repo/pulls/123""
+                }
+            }
+        }").RootElement;
+
+        var result = InvokeShouldSkipExecution("issues", payload);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShouldSkipExecution_ReturnsTrue_WhenIssueIsPullRequest_ForIssueCommentEvent()
+    {
+        var payload = JsonDocument.Parse(@"{
+            ""sender"": {
+                ""type"": ""User""
+            },
+            ""comment"": {
+                ""author_association"": ""OWNER""
+            },
+            ""issue"": {
+                ""number"": 123,
+                ""pull_request"": {
+                    ""url"": ""https://api.github.com/repos/owner/repo/pulls/123""
+                }
+            }
+        }").RootElement;
+
+        var result = InvokeShouldSkipExecution("issue_comment", payload);
+
+        result.Should().BeTrue();
+    }
+
+    [Fact]
+    public void ShouldSkipExecution_ReturnsFalse_WhenIssueIsNotPullRequest_ForIssuesEvent()
+    {
+        var payload = JsonDocument.Parse(@"{
+            ""issue"": {
+                ""number"": 123
+            }
+        }").RootElement;
+
+        var result = InvokeShouldSkipExecution("issues", payload);
+
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ShouldSkipExecution_ReturnsFalse_WhenIssueIsNotPullRequest_ForIssueCommentEvent()
+    {
+        var payload = JsonDocument.Parse(@"{
+            ""sender"": {
+                ""type"": ""User""
+            },
+            ""comment"": {
+                ""author_association"": ""OWNER""
+            },
+            ""issue"": {
+                ""number"": 123
+            }
+        }").RootElement;
+
+        var result = InvokeShouldSkipExecution("issue_comment", payload);
+
+        result.Should().BeFalse();
+    }
+
     private sealed class EnvironmentVariableScope : IDisposable
     {
         private readonly IReadOnlyList<(string Key, string? OriginalValue)> _snapshot;
