@@ -11,7 +11,7 @@ public class IssueSnapshotTests
     [Fact]
     public void Create_ShouldEnforceNonEmptyId()
     {
-        var act = () => IssueSnapshot.Create(string.Empty, 1, "Title", "octocat", Array.Empty<CommentSnapshot>());
+        var act = () => IssueSnapshot.Create(string.Empty, 1, "Title", "Body", DateTime.UtcNow, "octocat", Array.Empty<CommentSnapshot>());
 
         act.Should().Throw<ArgumentException>();
     }
@@ -23,7 +23,7 @@ public class IssueSnapshotTests
             .Select(i => CommentSnapshot.Create($"C{i}", "octocat", $"Comment {i}", DateTime.UtcNow))
             .ToList();
 
-        var snapshot = IssueSnapshot.Create("ID", 1, "Title", "octocat", comments);
+        var snapshot = IssueSnapshot.Create("ID", 1, "Title", "Body", DateTime.UtcNow, "octocat", comments);
 
         snapshot.LatestComments.Should().HaveCount(5);
     }

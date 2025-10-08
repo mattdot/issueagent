@@ -13,6 +13,10 @@ public record IssueSnapshot
 
     public required string Title { get; init; }
 
+    public required string Body { get; init; }
+
+    public required DateTime CreatedAtUtc { get; init; }
+
     public required string AuthorLogin { get; init; }
 
     public IReadOnlyList<CommentSnapshot>? LatestComments { get; init; }
@@ -20,7 +24,7 @@ public record IssueSnapshot
     private const int MaxTitleLength = 256;
     private const int MaxCommentCount = 5;
 
-    public static IssueSnapshot Create(string id, int number, string title, string authorLogin, IReadOnlyList<CommentSnapshot>? latestComments)
+    public static IssueSnapshot Create(string id, int number, string title, string body, DateTime createdAtUtc, string authorLogin, IReadOnlyList<CommentSnapshot>? latestComments)
     {
         if (string.IsNullOrWhiteSpace(id))
         {
@@ -49,7 +53,17 @@ public record IssueSnapshot
             normalizedTitle = normalizedTitle[..MaxTitleLength];
         }
 
+        var normalizedBody = (body ?? string.Empty).Trim();
         var normalizedAuthor = authorLogin.Trim();
+
+        var utcTimestamp = createdAtUtc.Kind == DateTimeKind.Utc
+            ? createdAtUtc
+            : createdAtUtc.ToUniversalTime();
+
+        if (utcTimestamp > DateTime.UtcNow.AddSeconds(1))
+        {
+            throw new ArgumentException("Issue timestamps cannot be in the future.", nameof(createdAtUtc));
+        }
 
         ReadOnlyCollection<CommentSnapshot>? limitedComments = null;
         if (latestComments is not null)
@@ -67,6 +81,8 @@ public record IssueSnapshot
             Id = normalizedId,
             Number = number,
             Title = normalizedTitle,
+            Body = normalizedBody,
+            CreatedAtUtc = utcTimestamp,
             AuthorLogin = normalizedAuthor,
             LatestComments = limitedComments
         };

@@ -79,6 +79,8 @@ public class IssueContextQueryExecutor
             return IssueContextResult.GraphQlFailure(request.RunId, request.EventType, "Issue author login missing from GraphQL response.");
         }
 
+        var issueBody = issue.Body ?? string.Empty;
+
         IReadOnlyList<CommentSnapshot>? comments = null;
         if (issue.Comments?.Nodes is { Count: > 0 } nodes)
         {
@@ -90,7 +92,7 @@ public class IssueContextQueryExecutor
                     continue;
                 }
 
-                var body = node.BodyText ?? string.Empty;
+                var body = node.Body ?? string.Empty;
                 snapshots.Add(CommentSnapshot.Create(node.Id, node.Author.Login, body, node.CreatedAt));
             }
 
@@ -101,6 +103,8 @@ public class IssueContextQueryExecutor
             issue.Id,
             issue.Number,
             issue.Title,
+            issueBody,
+            issue.CreatedAt,
             authorLogin,
             comments);
 
@@ -129,6 +133,8 @@ public class IssueContextQueryExecutor
                                     id
                                     number
                                     title
+                                    body
+                                    createdAt
                                     author {
                                         login
                                     }
@@ -139,7 +145,7 @@ public class IssueContextQueryExecutor
                                             author {
                                                 login
                                             }
-                                            bodyText
+                                            body
                                             createdAt
                                         }
                                     }

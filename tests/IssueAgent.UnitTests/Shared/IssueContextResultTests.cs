@@ -10,7 +10,7 @@ public class IssueContextResultTests
     [Fact]
     public void Success_ShouldPopulateAllFields()
     {
-        var issue = IssueSnapshot.Create("ISSUE_ID", 42, "Title", "octocat", Array.Empty<CommentSnapshot>());
+        var issue = IssueSnapshot.Create("ISSUE_ID", 42, "Title", "Body", DateTime.UtcNow, "octocat", Array.Empty<CommentSnapshot>());
 
         var result = IssueContextResult.Success("run-1", IssueEventType.IssueOpened, issue, DateTime.UtcNow);
 

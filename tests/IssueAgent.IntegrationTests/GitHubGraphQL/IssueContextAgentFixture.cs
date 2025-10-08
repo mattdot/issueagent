@@ -32,7 +32,19 @@ public sealed class IssueContextAgentFixture : IAsyncLifetime
 
         var executor = new IssueContextQueryExecutor(client);
         var tokenGuard = new GitHubTokenGuard();
-        return new IssueContextAgent(tokenGuard, executor, MetricsRecorder);
+        var historyBuilder = new IssueAgent.Agent.Conversation.ConversationHistoryBuilder("github-actions[bot]");
+        var decisionEngine = new IssueAgent.Agent.Conversation.ResponseDecisionEngine();
+        var responseGenerator = new IssueAgent.Agent.Conversation.AgentResponseGenerator();
+        
+        return new IssueContextAgent(
+            tokenGuard, 
+            executor, 
+            MetricsRecorder,
+            historyBuilder,
+            decisionEngine,
+            responseGenerator,
+            commentPoster: null,
+            logger: null);
     }
 
     public void Reset()

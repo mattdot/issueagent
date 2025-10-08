@@ -2,7 +2,7 @@ name: "Issue Agent"
 description: "Agent that improves the quality of GitHub issues."
 author: "mattdot"
 permissions:
-  issues: read
+  issues: write
 branding:
   icon: "book-open"
   color: "blue"

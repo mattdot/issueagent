@@ -8,13 +8,11 @@ public record CommentSnapshot
 
     public required string AuthorLogin { get; init; }
 
-    public required string BodyExcerpt { get; init; }
+    public required string Body { get; init; }
 
     public required DateTime CreatedAtUtc { get; init; }
 
-    private const int MaxExcerptLength = 280;
-
-    public static CommentSnapshot Create(string id, string authorLogin, string bodyExcerpt, DateTime createdAtUtc)
+    public static CommentSnapshot Create(string id, string authorLogin, string body, DateTime createdAtUtc)
     {
         if (string.IsNullOrWhiteSpace(id))
         {
@@ -28,12 +26,7 @@ public record CommentSnapshot
 
         var normalizedId = id.Trim();
         var normalizedAuthor = authorLogin.Trim();
-        var normalizedExcerpt = (bodyExcerpt ?? string.Empty).Trim();
-
-        if (normalizedExcerpt.Length > MaxExcerptLength)
-        {
-            normalizedExcerpt = normalizedExcerpt[..MaxExcerptLength];
-        }
+        var normalizedBody = (body ?? string.Empty).Trim();
 
         var utcTimestamp = createdAtUtc.Kind == DateTimeKind.Utc
             ? createdAtUtc
@@ -48,7 +41,7 @@ public record CommentSnapshot
         {
             Id = normalizedId,
             AuthorLogin = normalizedAuthor,
-            BodyExcerpt = normalizedExcerpt,
+            Body = normalizedBody,
             CreatedAtUtc = utcTimestamp
         };
     }

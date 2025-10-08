@@ -18,6 +18,8 @@ public sealed record IssueContextQueryResponse
         public string? Id { get; init; }
         public int Number { get; init; }
         public string? Title { get; init; }
+        public string? Body { get; init; }
+        public DateTime CreatedAt { get; init; }
         public Actor? Author { get; init; }
         public CommentConnection? Comments { get; init; }
     }
@@ -37,7 +39,7 @@ public sealed record IssueContextQueryResponse
     {
         public string? Id { get; init; }
         public Actor? Author { get; init; }
-        public string? BodyText { get; init; }
+        public string? Body { get; init; }
         public DateTime CreatedAt { get; init; }
     }
 }

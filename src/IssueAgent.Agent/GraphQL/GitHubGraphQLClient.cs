@@ -166,7 +166,7 @@ public class GitHubGraphQLClient : IGraphQLClient
             nodes.Add(new IssueContextQueryResponse.CommentNode
             {
                 Id = nodeElement.TryGetProperty("id", out var idElement) ? idElement.GetString() : null,
-                BodyText = nodeElement.TryGetProperty("bodyText", out var bodyElement) ? bodyElement.GetString() : null,
+                Body = nodeElement.TryGetProperty("body", out var bodyElement) ? bodyElement.GetString() : null,
                 CreatedAt = ReadDateTime(nodeElement, "createdAt"),
                 Author = ParseActor(nodeElement, "author")
             });

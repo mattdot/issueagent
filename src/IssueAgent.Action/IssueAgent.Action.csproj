@@ -4,6 +4,8 @@
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Suppress AOT warnings from Azure.AI.Agents.Persistent (via IssueAgent.Agent) which is not yet AOT-compatible -->
+    <NoWarn>$(NoWarn);IL2026;IL2104;IL3050;IL3053</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
