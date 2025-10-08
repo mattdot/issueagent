@@ -83,7 +83,26 @@ public static class AgentBootstrap
         var graphQlClient = new GitHubGraphQLClient(environment.Token, graphQlLogger, endpoint: graphQlEndpoint);
         var queryExecutor = new IssueContextQueryExecutor(graphQlClient);
         var metricsRecorder = new LoggingStartupMetricsRecorder(loggerFactory.CreateLogger<LoggingStartupMetricsRecorder>());
-        var agent = new IssueContextAgent(new GitHubTokenGuard(), queryExecutor, metricsRecorder);
+        
+        // Create conversation components
+        var botLogin = Environment.GetEnvironmentVariable("BOT_LOGIN") ?? "github-actions[bot]";
+        var historyBuilder = new IssueAgent.Agent.Conversation.ConversationHistoryBuilder(botLogin);
+        var decisionEngine = new IssueAgent.Agent.Conversation.ResponseDecisionEngine();
+        
+        // Create comment poster for posting responses
+        var commentPosterLogger = loggerFactory.CreateLogger<IssueAgent.Agent.GitHub.GitHubCommentPoster>();
+        var apiBaseUrl = Environment.GetEnvironmentVariable("GITHUB_API_URL");
+        var commentPoster = new IssueAgent.Agent.GitHub.GitHubCommentPoster(environment.Token, commentPosterLogger, apiBaseUrl);
+        
+        var agentLogger = loggerFactory.CreateLogger<IssueContextAgent>();
+        var agent = new IssueContextAgent(
+            new GitHubTokenGuard(), 
+            queryExecutor, 
+            metricsRecorder,
+            historyBuilder,
+            decisionEngine,
+            commentPoster,
+            agentLogger);
 
         try
         {
