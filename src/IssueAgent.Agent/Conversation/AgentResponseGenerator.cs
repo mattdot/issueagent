@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
@@ -40,10 +41,33 @@ public class AgentResponseGenerator
 
         try
         {
-            // For now, use the simple response generator
-            // The full AI integration requires proper understanding of the Persistent Agents API
-            // which may have changed or requires different patterns
-            _logger?.LogInformation("AI response generation requested but using fallback (API integration pending)");
+            _logger?.LogInformation("Generating AI response using Azure AI Foundry with model {ModelDeployment}", _modelDeploymentName);
+            
+            // TODO: Implement full Persistent Agents API integration
+            // The Azure.AI.Agents.Persistent API surface needs to be properly explored
+            // Current understanding:
+            // - PersistentAgentsClient.Administration provides admin operations
+            // - Need to determine correct methods for:
+            //   1. Creating an agent with model + instructions
+            //   2. Creating a thread
+            //   3. Adding messages to thread
+            //   4. Running the agent on the thread
+            //   5. Retrieving agent responses
+            //   6. Cleanup
+            //
+            // For now, using fallback with detailed logging for debugging
+            
+            _logger?.LogInformation("Conversation context: {MessageCount} messages", history.Count);
+            foreach (var msg in history)
+            {
+                _logger?.LogDebug("[{Role}] {Author}: {TextPreview}...", 
+                    msg.Role, 
+                    msg.AuthorName, 
+                    msg.Text.Substring(0, Math.Min(100, msg.Text.Length)));
+            }
+            
+            // Fall back to simple response until API is fully implemented
+            _logger?.LogWarning("Full AI integration pending - using fallback response");
             return Task.FromResult(GenerateSimpleResponse(history, decision));
         }
         catch (Exception ex)
@@ -51,6 +75,26 @@ public class AgentResponseGenerator
             _logger?.LogError(ex, "Error generating AI response - using fallback");
             return Task.FromResult(GenerateSimpleResponse(history, decision));
         }
+    }
+
+    private string BuildConversationPrompt(IReadOnlyList<ConversationMessage> history)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine("## Previous conversation:");
+        sb.AppendLine();
+        
+        foreach (var message in history)
+        {
+            var roleLabel = message.Role == Shared.Models.MessageRole.Assistant ? "Assistant (issueagent)" : $"User ({message.AuthorName})";
+            sb.AppendLine($"**{roleLabel}:**");
+            sb.AppendLine(message.Text);
+            sb.AppendLine();
+        }
+        
+        sb.AppendLine("## Your task:");
+        sb.AppendLine("Based on the conversation above, provide a helpful response following the responding policy in your instructions.");
+        
+        return sb.ToString();
     }
 
     private string GenerateSimpleResponse(IReadOnlyList<ConversationMessage> history, ResponseDecisionResult decision)
