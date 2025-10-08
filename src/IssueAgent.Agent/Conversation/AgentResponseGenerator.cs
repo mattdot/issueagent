@@ -9,6 +9,7 @@ using Azure.AI.Agents.Persistent;
 using Azure.AI.OpenAI;
 using IssueAgent.Shared.Models;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using OpenAI;
 
@@ -60,36 +61,30 @@ public class AgentResponseGenerator
         IReadOnlyList<ConversationMessage> history,
         CancellationToken cancellationToken)
     {
-        // Implementation based on provided examples:
-        // The examples show using extension methods CreateAIAgentAsync and GetAIAgentAsync
-        // on PersistentAgentsClient, but these are not available in current package versions.
+        // Attempted implementation with Microsoft.Agents.AI 1.0.0-preview.251007.1
+        // and Azure.AI.Agents.Persistent 1.2.0-beta.1:
         //
-        // Expected implementation (from examples):
         // AIAgent agent = await _agentClient!.CreateAIAgentAsync(
         //     model: _modelDeploymentName!,
         //     name: "issueagent",
         //     instructions: IssueAgentSystemPrompt.Prompt,
         //     cancellationToken: cancellationToken);
         //
-        // AgentThread thread = agent.GetNewThread();
-        // string prompt = BuildConversationPrompt(history);
-        // var response = await agent.RunAsync(prompt, thread, cancellationToken: cancellationToken);
-        // return response.ToString();
+        // However, CreateAIAgentAsync extension method not found in compilation.
+        // DLL contains "CreateAIAgent" (without Async) but signature/usage unclear.
         //
-        // Current status: Awaiting package version clarification
-        // - Added Azure.AI.OpenAI and OpenAI packages as suggested
-        // - Extension methods still not found in compilation
-        // - May need newer package versions from different NuGet feed
+        // Alternative approach from second example uses:
+        // new AzureOpenAIClient(...).GetChatClient(...).CreateAIAgent(...)
+        //
+        // Awaiting clarification on correct API usage.
         
-        _logger?.LogWarning("AI Agent integration pending - extension methods not available in current package versions");
-        _logger?.LogInformation("Package versions: Azure.AI.Agents.Persistent 1.1.0, Microsoft.Agents.AI 1.0.0-preview.251002.1");
-        _logger?.LogInformation("See GitHub issue comment thread for status");
+        _logger?.LogWarning("AI Agent integration pending API clarification");
+        _logger?.LogInformation("Using Microsoft.Agents.AI 1.0.0-preview.251007.1, Azure.AI.Agents.Persistent 1.2.0-beta.1");
         
-        // Fall back to simple response
-        await Task.CompletedTask; // Satisfy async signature
+        await Task.CompletedTask;
         throw new NotImplementedException(
-            "AIAgent extension methods (CreateAIAgentAsync, GetAIAgentAsync) not available. " +
-            "Waiting for package version clarification - see PR comment thread.");
+            "Extension methods from examples not found. " +
+            "Awaiting clarification on API usage - see PR comments.");
     }
 
     private string BuildConversationPrompt(IReadOnlyList<ConversationMessage> history)
