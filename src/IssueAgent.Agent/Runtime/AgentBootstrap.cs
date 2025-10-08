@@ -87,6 +87,19 @@ public static class AgentBootstrap
 
         try
         {
+            // Check if execution should be skipped (bot or insufficient permissions)
+            if (environment.ShouldSkip)
+            {
+                logger.LogInformation("Execution skipped: triggered by bot or user without sufficient permissions");
+                var skipResult = IssueContextResult.Skipped(
+                    environment.Request.RunId,
+                    environment.Request.EventType,
+                    "Triggered by bot or user without write/maintain/admin permissions");
+                
+                LogResult(logger, skipResult);
+                return 0; // Success exit code for skipped execution
+            }
+
             var result = await agent.ExecuteAsync(environment.Request, environment.Token, cancellationToken).ConfigureAwait(false);
 
             LogResult(logger, result);
@@ -124,6 +137,7 @@ public static class AgentBootstrap
         var root = document.RootElement.Clone();
 
         var request = CreateRequest(repository, eventName, runId, commentsPageSize, root);
+        var shouldSkip = ShouldSkipExecution(eventName, root);
 
         var metadata = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase)
         {
@@ -134,7 +148,7 @@ public static class AgentBootstrap
             ["github_token"] = token
         };
 
-        return new RuntimeEnvironment(token, request, metadata);
+        return new RuntimeEnvironment(token, request, metadata, shouldSkip);
     }
 
     /// <summary>
@@ -446,6 +460,53 @@ public static class AgentBootstrap
             EventType: eventType);
     }
 
+    private static bool ShouldSkipExecution(string eventName, JsonElement payload)
+    {
+        // Only check for issue_comment events
+        if (!string.Equals(eventName, "issue_comment", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        // Check if sender is a bot
+        if (payload.TryGetProperty("sender", out var senderElement))
+        {
+            if (senderElement.TryGetProperty("type", out var typeElement))
+            {
+                var senderType = typeElement.GetString();
+                if (string.Equals(senderType, "Bot", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+
+        // Check if comment author has insufficient permissions
+        if (payload.TryGetProperty("comment", out var commentElement))
+        {
+            if (commentElement.TryGetProperty("author_association", out var associationElement))
+            {
+                var association = associationElement.GetString();
+                // Allow: OWNER, MEMBER, COLLABORATOR (with write access), MAINTAINER (GitHub org)
+                // Block: CONTRIBUTOR, FIRST_TIME_CONTRIBUTOR, FIRST_TIMER, NONE
+                if (!string.IsNullOrEmpty(association))
+                {
+                    var allowedAssociations = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        "OWNER", "MEMBER", "COLLABORATOR", "MAINTAINER"
+                    };
+                    
+                    if (!allowedAssociations.Contains(association))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static int ReadIssueNumber(JsonElement payload)
     {
         if (!payload.TryGetProperty("issue", out var issueElement))
@@ -545,7 +606,7 @@ public static class AgentBootstrap
         return builder.ToString();
     }
 
-    private sealed record RuntimeEnvironment(string Token, IssueContextRequest Request, IReadOnlyDictionary<string, object?> Metadata);
+    private sealed record RuntimeEnvironment(string Token, IssueContextRequest Request, IReadOnlyDictionary<string, object?> Metadata, bool ShouldSkip);
 
     private sealed class LoggingStartupMetricsRecorder : StartupMetricsRecorder
     {
