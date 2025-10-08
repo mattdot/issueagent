@@ -1,13 +1,14 @@
 using Azure;
 using Azure.AI.Agents.Persistent;
 using Azure.Core;
+using Azure.Core.Pipeline;
 
 namespace IssueAgent.Agent.Runtime;
 
 /// <summary>
 /// API key-based authentication provider for Azure AI Foundry.
-/// This is an MVP workaround - Azure AI Foundry Persistent Agents primarily supports TokenCredential (Azure Entra ID).
-/// For production, use DefaultAzureCredential or ManagedIdentityCredential instead.
+/// Uses a custom authentication policy to properly send the API key in the `api-key` header.
+/// For production, consider using DefaultAzureCredential or ManagedIdentityCredential with Azure Entra ID.
 /// </summary>
 public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvider
 {
@@ -40,10 +41,16 @@ public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvide
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        // Create a simple StaticTokenCredential wrapper for API key
-        // Note: This is a workaround for MVP. Azure AI Foundry prefers Azure Entra ID (DefaultAzureCredential)
-        var credential = new StaticTokenCredential(_apiKey);
-        var client = new PersistentAgentsClient(endpoint, credential);
+        // Create a client with API key authentication
+        // Azure AI Foundry requires the API key to be sent in the "api-key" header, not as a bearer token
+        var options = new PersistentAgentsAdministrationClientOptions();
+        
+        // Add our custom policy to inject the api-key header
+        options.AddPolicy(new ApiKeyAuthenticationPolicy(_apiKey), HttpPipelinePosition.PerCall);
+        
+        // Use a no-op TokenCredential since we're handling auth via the custom policy
+        var credential = new NoOpTokenCredential();
+        var client = new PersistentAgentsClient(endpoint, credential, options);
 
         return Task.FromResult(client);
     }
@@ -51,26 +58,55 @@ public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvide
     /// <inheritdoc />
     public string GetAuthenticationMethodName()
     {
-        return "API Key (Static Token)";
+        return "API Key";
     }
 
     /// <summary>
-    /// Simple TokenCredential implementation that returns a static API key as a bearer token.
-    /// This is a workaround for MVP scenarios. Production should use DefaultAzureCredential.
+    /// HTTP pipeline policy that adds the Azure AI Foundry API key as a request header.
+    /// Azure AI services use the "api-key" header for API key authentication instead of bearer tokens.
     /// </summary>
-    private class StaticTokenCredential : TokenCredential
+    private class ApiKeyAuthenticationPolicy : HttpPipelinePolicy
     {
         private readonly string _apiKey;
 
-        public StaticTokenCredential(string apiKey)
+        public ApiKeyAuthenticationPolicy(string apiKey)
         {
             _apiKey = apiKey;
         }
 
+        public override void Process(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
+        {
+            // Add the api-key header for Azure AI Foundry authentication
+            message.Request.Headers.SetValue("api-key", _apiKey);
+            
+            // Remove the Authorization header if present (from the NoOpTokenCredential)
+            message.Request.Headers.Remove("Authorization");
+            
+            ProcessNext(message, pipeline);
+        }
+
+        public override ValueTask ProcessAsync(HttpMessage message, ReadOnlyMemory<HttpPipelinePolicy> pipeline)
+        {
+            // Add the api-key header for Azure AI Foundry authentication
+            message.Request.Headers.SetValue("api-key", _apiKey);
+            
+            // Remove the Authorization header if present (from the NoOpTokenCredential)
+            message.Request.Headers.Remove("Authorization");
+            
+            return ProcessNextAsync(message, pipeline);
+        }
+    }
+
+    /// <summary>
+    /// No-op TokenCredential that provides an empty token.
+    /// The actual authentication is handled by ApiKeyAuthenticationPolicy.
+    /// </summary>
+    private class NoOpTokenCredential : TokenCredential
+    {
         public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
         {
-            // Return API key as bearer token (expires far in the future since it's static)
-            return new AccessToken(_apiKey, DateTimeOffset.UtcNow.AddYears(1));
+            // Return an empty/placeholder token - authentication is handled by the custom policy
+            return new AccessToken(string.Empty, DateTimeOffset.MaxValue);
         }
 
         public override ValueTask<AccessToken> GetTokenAsync(TokenRequestContext requestContext, CancellationToken cancellationToken)
