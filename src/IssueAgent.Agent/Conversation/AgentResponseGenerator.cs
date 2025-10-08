@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Azure.AI.Agents.Persistent;
 using IssueAgent.Shared.Models;
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.Logging;
 
 namespace IssueAgent.Agent.Conversation;
@@ -27,7 +28,7 @@ public class AgentResponseGenerator
         _logger = logger;
     }
 
-    public Task<string> GenerateResponseAsync(
+    public async Task<string> GenerateResponseAsync(
         IReadOnlyList<ConversationMessage> history,
         ResponseDecisionResult decision,
         CancellationToken cancellationToken = default)
@@ -36,45 +37,52 @@ public class AgentResponseGenerator
         if (_agentClient == null || string.IsNullOrWhiteSpace(_modelDeploymentName))
         {
             _logger?.LogWarning("Azure AI Foundry not configured - using simple fallback responses");
-            return Task.FromResult(GenerateSimpleResponse(history, decision));
+            return GenerateSimpleResponse(history, decision);
         }
 
         try
         {
             _logger?.LogInformation("Generating AI response using Azure AI Foundry with model {ModelDeployment}", _modelDeploymentName);
-            
-            // TODO: Implement full Persistent Agents API integration
-            // The Azure.AI.Agents.Persistent API surface needs to be properly explored
-            // Current understanding:
-            // - PersistentAgentsClient.Administration provides admin operations
-            // - Need to determine correct methods for:
-            //   1. Creating an agent with model + instructions
-            //   2. Creating a thread
-            //   3. Adding messages to thread
-            //   4. Running the agent on the thread
-            //   5. Retrieving agent responses
-            //   6. Cleanup
-            //
-            // For now, using fallback with detailed logging for debugging
-            
             _logger?.LogInformation("Conversation context: {MessageCount} messages", history.Count);
-            foreach (var msg in history)
-            {
-                _logger?.LogDebug("[{Role}] {Author}: {TextPreview}...", 
-                    msg.Role, 
-                    msg.AuthorName, 
-                    msg.Text.Substring(0, Math.Min(100, msg.Text.Length)));
-            }
             
-            // Fall back to simple response until API is fully implemented
-            _logger?.LogWarning("Full AI integration pending - using fallback response");
-            return Task.FromResult(GenerateSimpleResponse(history, decision));
+            return await GenerateAIResponseAsync(history, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Error generating AI response - using fallback");
-            return Task.FromResult(GenerateSimpleResponse(history, decision));
+            return GenerateSimpleResponse(history, decision);
         }
+    }
+
+    private Task<string> GenerateAIResponseAsync(
+        IReadOnlyList<ConversationMessage> history,
+        CancellationToken cancellationToken)
+    {
+        // Based on the examples provided, the implementation should be:
+        //
+        // AIAgent agent = await _agentClient.CreateAIAgentAsync(
+        //     model: _modelDeploymentName!,
+        //     name: "issueagent",
+        //     instructions: IssueAgentSystemPrompt.Prompt,
+        //     cancellationToken: cancellationToken);
+        //
+        // AgentThread thread = agent.GetNewThread();
+        // string prompt = BuildConversationPrompt(history);
+        // var response = await agent.RunAsync(prompt, thread, cancellationToken: cancellationToken);
+        // return response.ToString();
+        //
+        // However, the extension methods CreateAIAgentAsync and GetAIAgentAsync are not available
+        // in the current package versions (Azure.AI.Agents.Persistent 1.1.0, Microsoft.Agents.AI 1.0.0-preview.251002.1).
+        //
+        // The Administration.CreateAgentAsync method exists but returns agent metadata, not an AIAgent.
+        // Need clarification on how to convert metadata to AIAgent or if newer package versions are needed.
+        
+        _logger?.LogWarning("AI Agent integration blocked - extension methods not available in current package versions");
+        _logger?.LogInformation("Using fallback response");
+        
+        throw new NotImplementedException(
+            "AIAgent extension methods (CreateAIAgentAsync, GetAIAgentAsync) not found in current package versions. " +
+            "See comment thread for details.");
     }
 
     private string BuildConversationPrompt(IReadOnlyList<ConversationMessage> history)
