@@ -8,13 +8,13 @@ namespace IssueAgent.UnitTests.Shared;
 public class CommentSnapshotTests
 {
     [Fact]
-    public void Create_ShouldTrimBodyTo280Characters()
+    public void Create_ShouldNotTrimBody()
     {
         var longBody = new string('a', 500);
 
         var snapshot = CommentSnapshot.Create("CID", "octocat", longBody, DateTime.UtcNow);
 
-        snapshot.BodyExcerpt.Should().HaveLength(280);
+        snapshot.Body.Should().HaveLength(500);
     }
 
     [Fact]

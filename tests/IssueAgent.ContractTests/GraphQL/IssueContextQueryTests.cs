@@ -111,14 +111,14 @@ public class IssueContextQueryTests
                                 {
                                     Id = "COMMENT_1",
                                     Author = new IssueContextQueryResponse.Actor { Login = "monalisa" },
-                                    BodyText = "First comment",
+                                    Body = "First comment",
                                     CreatedAt = DateTime.UtcNow.AddMinutes(-5)
                                 },
                                 new()
                                 {
                                     Id = "COMMENT_2",
                                     Author = new IssueContextQueryResponse.Actor { Login = "hubot" },
-                                    BodyText = "Second comment",
+                                    Body = "Second comment",
                                     CreatedAt = DateTime.UtcNow.AddMinutes(-1)
                                 }
                             }
