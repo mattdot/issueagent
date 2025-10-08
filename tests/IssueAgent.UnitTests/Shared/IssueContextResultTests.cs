@@ -44,4 +44,14 @@ public class IssueContextResultTests
         result.Status.Should().Be(IssueContextStatus.GraphQLFailure);
         result.Message.Should().Contain("Not found");
     }
+
+    [Fact]
+    public void Skipped_ShouldCaptureReason()
+    {
+        var result = IssueContextResult.Skipped("run-1", IssueEventType.IssueCommentCreated, "Bot comment");
+
+        result.Status.Should().Be(IssueContextStatus.Skipped);
+        result.Message.Should().Contain("Bot comment");
+        result.Issue.Should().BeNull();
+    }
 }

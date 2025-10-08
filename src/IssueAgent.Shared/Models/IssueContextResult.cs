@@ -7,7 +7,8 @@ public enum IssueContextStatus
     Success,
     GraphQLFailure,
     PermissionDenied,
-    UnexpectedError
+    UnexpectedError,
+    Skipped
 }
 
 public enum IssueEventType
@@ -73,6 +74,15 @@ public record IssueContextResult
             DateTime.UtcNow,
             IssueContextStatus.UnexpectedError,
             FormatMessage("Unexpected error", message));
+
+    public static IssueContextResult Skipped(string runId, IssueEventType eventType, string reason)
+        => Create(
+            runId,
+            eventType,
+            issue: null,
+            DateTime.UtcNow,
+            IssueContextStatus.Skipped,
+            FormatMessage("Skipped", reason));
 
     private static IssueContextResult Create(
         string runId,
