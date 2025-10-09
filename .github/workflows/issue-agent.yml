@@ -6,7 +6,7 @@ on:
     types: [created]
 
 jobs:
-  issue-context:
+  issue-agent:
     runs-on: ubuntu-latest
     permissions:
       issues: read
