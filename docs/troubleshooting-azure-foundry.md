@@ -51,7 +51,7 @@ This guide helps resolve common issues when connecting Issue Agent to Azure AI F
 
 **Category**: `AuthenticationFailure` / `UnexpectedError`
 
-**Cause**: The Azure AI Foundry credentials were not loaded properly by the Docker container. This was a known issue in versions prior to the fix in October 2025.
+**Cause**: The Azure OIDC authentication failed or the service principal doesn't have proper permissions.
 
 **Solutions**:
 
@@ -60,49 +60,69 @@ This guide helps resolve common issues when connecting Issue Agent to Azure AI F
    uses: mattdot/issueagent@main  # or @v1.1.0 or later
    ```
 
-2. **Verify inputs are passed correctly**:
+2. **Verify OIDC inputs are passed correctly**:
    ```yaml
+   permissions:
+     id-token: write  # Required for OIDC
+     issues: read
    with:
      azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
-     azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+     azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+     azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
    ```
 
-3. **Historical note**: In versions before October 2025, there was a mismatch between the GitHub Actions input variable names (which created `INPUT_AZURE_AI_FOUNDRY_*` environment variables) and the C# code (which looked for `INPUT_AZURE_FOUNDRY_*` without the `_AI_` part). This has been fixed. If you're still experiencing this issue, ensure you're on the latest version.
+3. **Verify service principal setup**:
+   - Check that the federated credential is configured correctly
+   - Ensure the subject matches your repository: `repo:YOUR_ORG/YOUR_REPO:ref:refs/heads/main`
+   - Verify the service principal has "Cognitive Services User" role
+
+4. **Check workflow permissions**:
+   - Ensure `id-token: write` permission is set in the workflow
+   - This is required for GitHub Actions to generate OIDC tokens
 
 ---
 
-### Error: "Authentication to Azure AI Foundry failed. Verify API key is valid and not expired"
+### Error: "Authentication failed. Verify the API key has access to the endpoint"
 
 **Category**: `AuthenticationFailure`
 
-**Cause**: The API key is invalid, expired, or doesn't have access to the endpoint.
+**Cause**: The service principal credentials are invalid or don't have access to the Azure AI Foundry resource.
 
 **Solutions**:
 
-1. **Regenerate API key**:
-   - Go to Azure AI Foundry portal
-   - Navigate to Settings → Keys and Endpoints
-   - Regenerate the key
-   - Update GitHub Secret `AZURE_AI_FOUNDRY_API_KEY`
-
-2. **Verify key format**:
+1. **Verify service principal has correct role**:
    ```bash
-   # API keys should be 84 characters (typically)
-   echo -n "$AZURE_AI_FOUNDRY_API_KEY" | wc -c
+   # Check role assignments
+   az role assignment list \
+     --assignee $CLIENT_ID \
+     --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP \
+     --output table
    ```
 
-3. **Check key permissions**:
-   - Ensure the API key has access to the specific project
-   - Verify RBAC permissions in Azure portal
-
-4. **Verify secret configuration**:
-   ```yaml
-   # Ensure secret is passed correctly
-   with:
-     azure_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+2. **Verify federated credential configuration**:
+   ```bash
+   # List federated credentials
+   az ad app federated-credential list --id $CLIENT_ID
    
-   # NOT like this (hardcoded):
-   # azure_foundry_api_key: "abcd1234..."  # WRONG!
+   # Check that the subject matches your repo
+   # Should be: repo:YOUR_ORG/YOUR_REPO:ref:refs/heads/BRANCH
+   ```
+
+3. **Verify secret configuration**:
+   ```yaml
+   # Ensure secrets are passed correctly
+   with:
+     azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+     azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+   ```
+
+4. **Re-assign role if needed**:
+   ```bash
+   # Assign Cognitive Services User role
+   az role assignment create \
+     --role "Cognitive Services User" \
+     --assignee $CLIENT_ID \
+     --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP
    ```
 
 ---
@@ -120,7 +140,7 @@ This guide helps resolve common issues when connecting Issue Agent to Azure AI F
 1. **Add endpoint to workflow**:
    ```yaml
    with:
-     azure_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+     azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
    ```
 
 2. **Or set environment variable**:
@@ -132,6 +152,46 @@ This guide helps resolve common issues when connecting Issue Agent to Azure AI F
 3. **Verify secret exists**:
    - Go to repository Settings → Secrets and variables → Actions
    - Ensure `AZURE_AI_FOUNDRY_ENDPOINT` is defined
+
+---
+
+### Error: "Azure client ID is required when endpoint is provided"
+
+**Category**: `MissingConfiguration`
+
+**Cause**: No client ID was provided via input parameter or environment variable.
+
+**Solutions**:
+
+1. **Add client ID to workflow**:
+   ```yaml
+   with:
+     azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+   ```
+
+2. **Verify secret exists**:
+   - Go to repository Settings → Secrets and variables → Actions
+   - Ensure `AZURE_CLIENT_ID` is defined with your service principal client ID
+
+---
+
+### Error: "Azure tenant ID is required when endpoint is provided"
+
+**Category**: `MissingConfiguration`
+
+**Cause**: No tenant ID was provided via input parameter or environment variable.
+
+**Solutions**:
+
+1. **Add tenant ID to workflow**:
+   ```yaml
+   with:
+     azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
+   ```
+
+2. **Verify secret exists**:
+   - Go to repository Settings → Secrets and variables → Actions
+   - Ensure `AZURE_TENANT_ID` is defined with your Azure tenant ID
 
 ---
 
@@ -293,11 +353,12 @@ Use the validation script:
 
 ```bash
 # Set environment variables
-export ISSUE_AGENT_ENDPOINT="https://your-resource.services.ai.azure.com/api/projects/your-project"
-export ISSUE_AGENT_KEY="your-api-key"
+export AZURE_AI_FOUNDRY_ENDPOINT="https://your-resource.services.ai.azure.com/api/projects/your-project"
+export AZURE_CLIENT_ID="your-client-id"
+export AZURE_TENANT_ID="your-tenant-id"
 
-# Run validator
-./validate-connection.sh
+# Run validator (if available)
+# ./validate-connection.sh
 ```
 
 Expected output:
@@ -322,7 +383,7 @@ Azure AI Foundry not configured - skipping initialization
 **Connection Failure**:
 ```
 Azure AI Foundry connection failed after 125ms: Authentication failed. 
-Verify the API key has access to the endpoint. (Category: AuthenticationFailure)
+Verify the service principal has Cognitive Services User role. (Category: AuthenticationFailure)
 ```
 
 ---
@@ -349,6 +410,7 @@ If you're still experiencing issues:
      - Workflow YAML (with secrets redacted)
      - Connection duration from logs
      - Azure region
+     - Service principal configuration (client ID and tenant ID only, no secrets)
 
 4. **Check Azure status**:
    - [Azure AI Foundry status](https://azure.status.microsoft)
@@ -358,7 +420,9 @@ If you're still experiencing issues:
 
 ## Related Documentation
 
+- [Service Principal Setup Guide](service-principal-setup.md)
 - [Azure AI Foundry Documentation](https://learn.microsoft.com/en-us/azure/ai-foundry/)
+- [GitHub Actions OIDC](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect)
 - [Agent Framework Quickstart](https://learn.microsoft.com/en-us/agent-framework/tutorials/quick-start)
 - [Main README](../README.md)
 - [Issue Context Runbook](operations/issue-context-runbook.md)
