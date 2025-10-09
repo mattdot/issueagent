@@ -82,7 +82,7 @@ public class IssueContextAgent
             if (_commentPoster != null)
             {
                 _logger?.LogInformation("Generating AI response for issue #{IssueNumber}", result.Issue.Number);
-                
+
                 var responseBody = await _responseGenerator.GenerateResponseAsync(history, decision, cancellationToken).ConfigureAwait(false);
 
                 var postResult = await _commentPoster.PostCommentAsync(

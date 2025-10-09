@@ -34,8 +34,8 @@ public class GitHubCommentPoster
 
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-        var baseUrl = !string.IsNullOrWhiteSpace(apiBaseUrl) 
-            ? new Uri(apiBaseUrl) 
+        var baseUrl = !string.IsNullOrWhiteSpace(apiBaseUrl)
+            ? new Uri(apiBaseUrl)
             : new Uri("https://api.github.com");
 
         _httpClient = new HttpClient
@@ -105,7 +105,7 @@ public class GitHubCommentPoster
             }
 
             var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            
+
             // Parse response using source-generated JSON
             var responseData = JsonSerializer.Deserialize(responseContent, GitHubCommentJsonContext.Default.GitHubCommentResponse);
 

@@ -26,7 +26,7 @@ public class DockerContainerIntegrationTests
         // Skip if test environment variables are not available
         var testToken = Environment.GetEnvironmentVariable("TEST_PAT");
         var testRepo = Environment.GetEnvironmentVariable("TEST_REPO");
-        
+
         if (string.IsNullOrWhiteSpace(testToken) || string.IsNullOrWhiteSpace(testRepo))
         {
             _output.WriteLine("Skipping integration test: TEST_PAT and TEST_REPO environment variables are required");
@@ -50,7 +50,7 @@ public class DockerContainerIntegrationTests
             _output.WriteLine($"Container output:\n{result.Output}");
 
             result.ExitCode.Should().Be(0, "Agent should successfully fetch issue context");
-            
+
             // Verify key log entries indicate successful execution
             result.Output.Should().Contain("Issue context status: Success", "Agent should report success status");
             result.Output.Should().Contain("StartupDurationMs=", "Agent should report startup metrics");
@@ -70,7 +70,7 @@ public class DockerContainerIntegrationTests
     public async Task DockerContainer_ShouldHandleInvalidToken_Gracefully()
     {
         var testRepo = Environment.GetEnvironmentVariable("TEST_REPO");
-        
+
         if (string.IsNullOrWhiteSpace(testRepo))
         {
             _output.WriteLine("Skipping integration test: TEST_REPO environment variable is required");
@@ -108,7 +108,7 @@ public class DockerContainerIntegrationTests
     {
         var testToken = Environment.GetEnvironmentVariable("TEST_PAT");
         var testRepo = Environment.GetEnvironmentVariable("TEST_REPO");
-        
+
         if (string.IsNullOrWhiteSpace(testToken) || string.IsNullOrWhiteSpace(testRepo))
         {
             _output.WriteLine("Skipping performance test: TEST_PAT and TEST_REPO environment variables are required");
@@ -123,7 +123,7 @@ public class DockerContainerIntegrationTests
         try
         {
             var stopwatch = Stopwatch.StartNew();
-            
+
             var result = await RunDockerContainer(testToken, testRepo, tempEventFile);
             stopwatch.Stop();
 
@@ -131,16 +131,16 @@ public class DockerContainerIntegrationTests
             _output.WriteLine($"Container output:\n{result.Output}");
 
             // Performance assertions for GitHub Actions context
-            stopwatch.ElapsedMilliseconds.Should().BeLessThan(30_000, 
+            stopwatch.ElapsedMilliseconds.Should().BeLessThan(30_000,
                 "Container should complete within 30 seconds for GitHub Actions");
-                
+
             if (result.ExitCode == 0)
             {
                 // Extract startup metrics from logs if successful
                 var startupDuration = ExtractStartupDurationFromLogs(result.Output);
                 if (startupDuration.HasValue)
                 {
-                    startupDuration.Value.Should().BeLessThan(5_000, 
+                    startupDuration.Value.Should().BeLessThan(5_000,
                         "AOT agent should have cold start under 5 seconds");
                 }
             }
@@ -159,7 +159,7 @@ public class DockerContainerIntegrationTests
     {
         var testToken = Environment.GetEnvironmentVariable("TEST_PAT");
         var testRepo = Environment.GetEnvironmentVariable("TEST_REPO");
-        
+
         if (string.IsNullOrWhiteSpace(testToken) || string.IsNullOrWhiteSpace(testRepo))
         {
             _output.WriteLine("Skipping custom URL test: TEST_PAT and TEST_REPO environment variables are required");
@@ -175,9 +175,9 @@ public class DockerContainerIntegrationTests
         {
             // Test with explicit GITHUB_GRAPHQL_URL pointing to GitHub.com
             var result = await RunDockerContainer(
-                testToken, 
-                testRepo, 
-                tempEventFile, 
+                testToken,
+                testRepo,
+                tempEventFile,
                 graphqlUrl: "https://api.github.com/graphql");
 
             _output.WriteLine($"Container exit code: {result.ExitCode}");
@@ -203,13 +203,13 @@ public class DockerContainerIntegrationTests
         var testRepo = Environment.GetEnvironmentVariable("TEST_REPO");
         var azureEndpoint = Environment.GetEnvironmentVariable("TEST_AZURE_AI_FOUNDRY_ENDPOINT");
         var azureApiKey = Environment.GetEnvironmentVariable("TEST_AZURE_AI_FOUNDRY_API_KEY");
-        
+
         if (string.IsNullOrWhiteSpace(testToken) || string.IsNullOrWhiteSpace(testRepo))
         {
             _output.WriteLine("Skipping Azure AI Foundry test: TEST_PAT and TEST_REPO environment variables are required");
             return;
         }
-        
+
         if (string.IsNullOrWhiteSpace(azureEndpoint) || string.IsNullOrWhiteSpace(azureApiKey))
         {
             _output.WriteLine("Skipping Azure AI Foundry test: TEST_AZURE_AI_FOUNDRY_ENDPOINT and TEST_AZURE_AI_FOUNDRY_API_KEY environment variables are required");
@@ -225,8 +225,8 @@ public class DockerContainerIntegrationTests
         {
             // Test with Azure AI Foundry credentials passed as INPUT_ variables (mimicking GitHub Actions)
             var result = await RunDockerContainerWithAzureFoundry(
-                testToken, 
-                testRepo, 
+                testToken,
+                testRepo,
                 tempEventFile,
                 azureEndpoint,
                 azureApiKey);
@@ -235,7 +235,7 @@ public class DockerContainerIntegrationTests
             _output.WriteLine($"Container output:\n{result.Output}");
 
             result.ExitCode.Should().Be(0, "Agent should successfully load Azure AI Foundry credentials");
-            result.Output.Should().Contain("Azure AI Foundry connection established", 
+            result.Output.Should().Contain("Azure AI Foundry connection established",
                 "Agent should report successful Azure AI Foundry connection");
         }
         finally
@@ -262,24 +262,24 @@ public class DockerContainerIntegrationTests
         // Build the image from the workspace root
         var workspaceRoot = FindWorkspaceRoot();
         var buildResult = await RunDockerCommand(new[] { "build", "-t", _imageName, "." }, workspaceRoot);
-        
+
         if (buildResult.ExitCode != 0)
         {
             throw new InvalidOperationException($"Failed to build Docker image: {buildResult.Output}");
         }
-        
+
         _output.WriteLine("Docker image built successfully");
     }
 
     private async Task<(int ExitCode, string Output)> RunDockerContainer(
-        string token, 
-        string repo, 
-        string eventFilePath, 
-        string? graphqlUrl = null, 
+        string token,
+        string repo,
+        string eventFilePath,
+        string? graphqlUrl = null,
         string? apiUrl = null)
     {
         var containerId = Guid.NewGuid().ToString("N")[..12];
-        
+
         // Build environment variables list
         var envVars = new List<string>
         {
@@ -310,10 +310,10 @@ public class DockerContainerIntegrationTests
         var createArgs = new List<string> { "create", "--name", containerId };
         createArgs.AddRange(envVars);
         createArgs.Add(_imageName);
-        
+
         // First, create the container
         var createResult = await RunDockerCommand(createArgs.ToArray());
-        
+
         if (createResult.ExitCode != 0)
         {
             throw new InvalidOperationException($"Failed to create container: {createResult.Output}");
@@ -329,16 +329,16 @@ public class DockerContainerIntegrationTests
 
         // Start the container
         var startResult = await RunDockerCommand("start", "-a", containerId);
-        
+
         // Remove the container
         await RunDockerCommand("rm", "-f", containerId);
-        
+
         return (startResult.ExitCode, startResult.Output);
     }
 
     private async Task<(int ExitCode, string Output)> RunDockerContainerWithAzureFoundry(
-        string token, 
-        string repo, 
+        string token,
+        string repo,
         string eventFilePath,
         string azureEndpoint,
         string azureApiKey,
@@ -346,7 +346,7 @@ public class DockerContainerIntegrationTests
         string? apiVersion = null)
     {
         var containerId = Guid.NewGuid().ToString("N")[..12];
-        
+
         // Build environment variables list
         var envVars = new List<string>
         {
@@ -378,10 +378,10 @@ public class DockerContainerIntegrationTests
         var createArgs = new List<string> { "create", "--name", containerId };
         createArgs.AddRange(envVars);
         createArgs.Add(_imageName);
-        
+
         // First, create the container
         var createResult = await RunDockerCommand(createArgs.ToArray());
-        
+
         if (createResult.ExitCode != 0)
         {
             throw new InvalidOperationException($"Failed to create container: {createResult.Output}");
@@ -397,10 +397,10 @@ public class DockerContainerIntegrationTests
 
         // Start the container
         var startResult = await RunDockerCommand("start", "-a", containerId);
-        
+
         // Remove the container
         await RunDockerCommand("rm", "-f", containerId);
-        
+
         return (startResult.ExitCode, startResult.Output);
     }
 
@@ -418,7 +418,7 @@ public class DockerContainerIntegrationTests
         process.StartInfo.RedirectStandardOutput = true;
         process.StartInfo.RedirectStandardError = true;
         process.StartInfo.CreateNoWindow = true;
-        
+
         if (workingDirectory != null)
         {
             process.StartInfo.WorkingDirectory = workingDirectory;
@@ -448,7 +448,7 @@ public class DockerContainerIntegrationTests
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-        
+
         await process.WaitForExitAsync();
 
         var combinedOutput = outputBuilder.ToString() + errorBuilder.ToString();
@@ -459,7 +459,7 @@ public class DockerContainerIntegrationTests
     {
         var tempFile = Path.GetTempFileName();
         await File.WriteAllTextAsync(tempFile, jsonContent);
-        
+
         // Make the file world-readable so the container's non-root user can read it
         if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
@@ -470,7 +470,7 @@ public class DockerContainerIntegrationTests
                 await chmodProcess.WaitForExitAsync();
             }
         }
-        
+
         return tempFile;
     }
 
@@ -519,7 +519,7 @@ public class DockerContainerIntegrationTests
                 var startIndex = line.IndexOf("StartupDurationMs=") + "StartupDurationMs=".Length;
                 var endIndex = line.IndexOf(' ', startIndex);
                 if (endIndex == -1) endIndex = line.Length;
-                
+
                 var durationStr = line.Substring(startIndex, endIndex - startIndex);
                 if (long.TryParse(durationStr, out var duration))
                 {
@@ -542,7 +542,7 @@ public class DockerContainerIntegrationTests
             var parent = Directory.GetParent(current);
             current = parent?.FullName;
         }
-        
+
         throw new InvalidOperationException("Could not find workspace root containing IssueAgent.sln");
     }
 }

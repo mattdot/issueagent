@@ -44,7 +44,7 @@ public static class AgentBootstrap
                 options.SingleLine = true;
                 options.TimestampFormat = "HH:mm:ss ";
             });
-            
+
             // Check for verbose logging flag
             var verboseLogging = ReadVerboseLoggingFlag();
             builder.SetMinimumLevel(verboseLogging ? LogLevel.Debug : LogLevel.Information);
@@ -65,7 +65,7 @@ public static class AgentBootstrap
         var azureFoundryConfig = LoadAzureAIFoundryConfiguration(logger);
         Azure.AI.Agents.Persistent.PersistentAgentsClient? agentClient = null;
         string? modelDeploymentName = null;
-        
+
         if (azureFoundryConfig != null)
         {
             logger.LogInformation("Initializing Azure AI Foundry connection...");
@@ -74,7 +74,7 @@ public static class AgentBootstrap
                 TruncateEndpoint(azureFoundryConfig.Endpoint),
                 azureFoundryConfig.ModelDeploymentName ?? "gpt-5-mini",
                 azureFoundryConfig.ApiVersion ?? AzureAIFoundryConfiguration.DefaultApiVersion);
-            
+
             var connectionResult = await InitializeAzureAIFoundryAsync(azureFoundryConfig, logger, cancellationToken).ConfigureAwait(false);
 
             if (!connectionResult.IsSuccess)
@@ -91,7 +91,7 @@ public static class AgentBootstrap
                 "Azure AI Foundry connection established in {Duration}ms to endpoint {EndpointSuffix}",
                 connectionResult.Duration.TotalMilliseconds,
                 connectionResult.AttemptedEndpoint);
-            
+
             agentClient = connectionResult.Client;
             modelDeploymentName = azureFoundryConfig.ModelDeploymentName;
         }
@@ -105,28 +105,28 @@ public static class AgentBootstrap
         var graphQlClient = new GitHubGraphQLClient(environment.Token, graphQlLogger, endpoint: graphQlEndpoint);
         var queryExecutor = new IssueContextQueryExecutor(graphQlClient);
         var metricsRecorder = new LoggingStartupMetricsRecorder(loggerFactory.CreateLogger<LoggingStartupMetricsRecorder>());
-        
+
         // Create conversation components
         var botLogin = Environment.GetEnvironmentVariable("BOT_LOGIN") ?? "github-actions[bot]";
         var historyBuilder = new IssueAgent.Agent.Conversation.ConversationHistoryBuilder(botLogin);
         var decisionEngine = new IssueAgent.Agent.Conversation.ResponseDecisionEngine();
-        
+
         // Create AI response generator
         var responseGeneratorLogger = loggerFactory.CreateLogger<IssueAgent.Agent.Conversation.AgentResponseGenerator>();
         var responseGenerator = new IssueAgent.Agent.Conversation.AgentResponseGenerator(
             agentClient,
             modelDeploymentName,
             responseGeneratorLogger);
-        
+
         // Create comment poster for posting responses
         var commentPosterLogger = loggerFactory.CreateLogger<IssueAgent.Agent.GitHub.GitHubCommentPoster>();
         var apiBaseUrl = Environment.GetEnvironmentVariable("GITHUB_API_URL");
         var commentPoster = new IssueAgent.Agent.GitHub.GitHubCommentPoster(environment.Token, commentPosterLogger, apiBaseUrl);
-        
+
         var agentLogger = loggerFactory.CreateLogger<IssueContextAgent>();
         var agent = new IssueContextAgent(
-            new GitHubTokenGuard(), 
-            queryExecutor, 
+            new GitHubTokenGuard(),
+            queryExecutor,
             metricsRecorder,
             historyBuilder,
             decisionEngine,
@@ -144,7 +144,7 @@ public static class AgentBootstrap
                     environment.Request.RunId,
                     environment.Request.EventType,
                     "Triggered by bot or user without write/maintain/admin permissions");
-                
+
                 LogResult(logger, skipResult);
                 return 0; // Success exit code for skipped execution
             }
@@ -263,7 +263,7 @@ public static class AgentBootstrap
                 // The actual API call will happen when we use the agent in production
                 var administrationClient = client.Administration;
                 logger?.LogDebug("Administration client accessed successfully");
-                
+
                 // Note: We don't perform actual agent creation/deletion here to avoid polluting
                 // the Azure AI Foundry environment. The client construction and property access
                 // validates that credentials and endpoint are structurally correct.
@@ -333,12 +333,12 @@ public static class AgentBootstrap
         {
             logger?.LogDebug("Validation exception: {Message}", validationEx.Message);
             stopwatch.Stop();
-            
+
             // Distinguish between missing configuration and invalid configuration
             var errorCategory = validationEx.Message.Contains("is required", StringComparison.OrdinalIgnoreCase)
                 ? ConnectionErrorCategory.MissingConfiguration
                 : ConnectionErrorCategory.InvalidConfiguration;
-            
+
             return AzureAIFoundryConnectionResult.Failure(
                 validationEx.Message,
                 errorCategory,
@@ -457,7 +457,7 @@ public static class AgentBootstrap
 
     private static string? ReadToken()
     {
-    var explicitToken = ReadInputVariable("github_token");
+        var explicitToken = ReadInputVariable("github_token");
         if (!string.IsNullOrWhiteSpace(explicitToken))
         {
             return explicitToken;
@@ -630,7 +630,7 @@ public static class AgentBootstrap
                     {
                         "OWNER", "MEMBER", "COLLABORATOR", "MAINTAINER"
                     };
-                    
+
                     if (!allowedAssociations.Contains(association))
                     {
                         return true;
