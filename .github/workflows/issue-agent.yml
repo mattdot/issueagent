@@ -17,4 +17,5 @@ jobs:
           github_token: ${{ github.token }}
           azure_ai_foundry_endpoint: ${{ vars.ISSUE_AGENT_ENDPOINT }}
           azure_ai_foundry_api_key: ${{ secrets.ISSUE_AGENT_KEY }}
+          enable_verbose_logging: true
           
