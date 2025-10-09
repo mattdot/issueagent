@@ -47,6 +47,30 @@ This guide helps resolve common issues when connecting Issue Agent to Azure AI F
 
 ## Authentication Failures
 
+### Error: "Unauthorized. Access token is missing, invalid, audience is incorrect (https://ai.azure.com/), or have expired"
+
+**Category**: `AuthenticationFailure` / `UnexpectedError`
+
+**Cause**: The Azure AI Foundry credentials were not loaded properly by the Docker container. This was a known issue in versions prior to the fix in October 2025.
+
+**Solutions**:
+
+1. **Ensure you're using the latest version**:
+   ```yaml
+   uses: mattdot/issueagent@main  # or @v1.1.0 or later
+   ```
+
+2. **Verify inputs are passed correctly**:
+   ```yaml
+   with:
+     azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+     azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+   ```
+
+3. **Historical note**: In versions before October 2025, there was a mismatch between the GitHub Actions input variable names (which created `INPUT_AZURE_AI_FOUNDRY_*` environment variables) and the C# code (which looked for `INPUT_AZURE_FOUNDRY_*` without the `_AI_` part). This has been fixed. If you're still experiencing this issue, ensure you're on the latest version.
+
+---
+
 ### Error: "Authentication to Azure AI Foundry failed. Verify API key is valid and not expired"
 
 **Category**: `AuthenticationFailure`
