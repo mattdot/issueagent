@@ -71,7 +71,6 @@ Examples:
   $(basename "$0") --environment production
 
 EOF
-    exit 0
 }
 
 log_info() {
@@ -397,10 +396,13 @@ parse_args() {
                 ;;
             -h|--help)
                 usage
+                exit 0
                 ;;
             *)
                 log_error "Unknown option: $1"
+                echo ""
                 usage
+                exit 1
                 ;;
         esac
     done
