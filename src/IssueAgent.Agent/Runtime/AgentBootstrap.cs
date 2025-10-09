@@ -56,7 +56,10 @@ public static class AgentBootstrap
         var verboseLogging = ReadVerboseLoggingFlag();
         if (verboseLogging)
         {
-            logger.LogDebug("Verbose logging enabled");
+            logger.LogInformation("Verbose logging enabled - Debug level logs will be shown");
+            logger.LogDebug("Checking verbose logging configuration: INPUT_ENABLE_VERBOSE_LOGGING={Input}, ENABLE_VERBOSE_LOGGING={Env}",
+                Environment.GetEnvironmentVariable("INPUT_ENABLE_VERBOSE_LOGGING") ?? "not set",
+                Environment.GetEnvironmentVariable("ENABLE_VERBOSE_LOGGING") ?? "not set");
         }
 
         LogMetadata(logger, environment.Metadata);
@@ -406,8 +409,14 @@ public static class AgentBootstrap
     private static AzureAIFoundryConfiguration? LoadAzureAIFoundryConfiguration(ILogger logger)
     {
         // Check if Azure AI Foundry is configured (endpoint is the required field)
-        var endpoint = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_ENDPOINT")
-            ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT");
+        var inputEndpoint = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_ENDPOINT");
+        var envEndpoint = Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT");
+        var endpoint = inputEndpoint ?? envEndpoint;
+
+        logger.LogDebug(
+            "Checking Azure AI Foundry configuration: INPUT_AZURE_AI_FOUNDRY_ENDPOINT={InputSet}, AZURE_AI_FOUNDRY_ENDPOINT={EnvSet}",
+            !string.IsNullOrWhiteSpace(inputEndpoint) ? "set" : "not set",
+            !string.IsNullOrWhiteSpace(envEndpoint) ? "set" : "not set");
 
         if (string.IsNullOrWhiteSpace(endpoint))
         {
@@ -417,22 +426,49 @@ public static class AgentBootstrap
         }
 
         logger.LogDebug("Loading Azure AI Foundry configuration from environment variables");
+        logger.LogDebug("Using endpoint from {Source}", !string.IsNullOrWhiteSpace(inputEndpoint) ? "INPUT_AZURE_AI_FOUNDRY_ENDPOINT" : "AZURE_AI_FOUNDRY_ENDPOINT");
 
-        var apiKey = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_KEY")
-            ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY")
-            ?? throw new InvalidOperationException(
-                "Azure AI Foundry API key is required when endpoint is provided. " +
-                "Set 'azure_ai_foundry_api_key' input or AZURE_AI_FOUNDRY_API_KEY environment variable.");
-
-        var modelDeployment = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT")
-            ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT");
-
-        var apiVersion = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_VERSION")
-            ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_VERSION");
+        var inputApiKey = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_KEY");
+        var envApiKey = Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY");
+        var apiKey = inputApiKey ?? envApiKey;
 
         logger.LogDebug(
-            "Azure AI Foundry configuration loaded successfully - API key present: {ApiKeyPresent}",
-            !string.IsNullOrWhiteSpace(apiKey));
+            "API Key configuration: INPUT_AZURE_AI_FOUNDRY_API_KEY={InputSet}, AZURE_AI_FOUNDRY_API_KEY={EnvSet}",
+            !string.IsNullOrWhiteSpace(inputApiKey) ? "set" : "not set",
+            !string.IsNullOrWhiteSpace(envApiKey) ? "set" : "not set");
+
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            throw new InvalidOperationException(
+                "Azure AI Foundry API key is required when endpoint is provided. " +
+                "Set 'azure_ai_foundry_api_key' input or AZURE_AI_FOUNDRY_API_KEY environment variable.");
+        }
+
+        logger.LogDebug("Using API key from {Source} (length: {Length} characters)", 
+            !string.IsNullOrWhiteSpace(inputApiKey) ? "INPUT_AZURE_AI_FOUNDRY_API_KEY" : "AZURE_AI_FOUNDRY_API_KEY",
+            apiKey.Length);
+
+        var inputModelDeployment = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT");
+        var envModelDeployment = Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT");
+        var modelDeployment = inputModelDeployment ?? envModelDeployment;
+
+        logger.LogDebug(
+            "Model deployment configuration: INPUT_AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT={InputSet}, AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT={EnvSet}, effective value={EffectiveValue}",
+            !string.IsNullOrWhiteSpace(inputModelDeployment) ? "set" : "not set",
+            !string.IsNullOrWhiteSpace(envModelDeployment) ? "set" : "not set",
+            modelDeployment ?? "gpt-5-mini (default)");
+
+        var inputApiVersion = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_VERSION");
+        var envApiVersion = Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_VERSION");
+        var apiVersion = inputApiVersion ?? envApiVersion;
+
+        logger.LogDebug(
+            "API version configuration: INPUT_AZURE_AI_FOUNDRY_API_VERSION={InputSet}, AZURE_AI_FOUNDRY_API_VERSION={EnvSet}, effective value={EffectiveValue}",
+            !string.IsNullOrWhiteSpace(inputApiVersion) ? "set" : "not set",
+            !string.IsNullOrWhiteSpace(envApiVersion) ? "set" : "not set",
+            apiVersion ?? AzureAIFoundryConfiguration.DefaultApiVersion + " (default)");
+
+        logger.LogDebug("Azure AI Foundry configuration loaded successfully");
 
         return new AzureAIFoundryConfiguration
         {
