@@ -57,30 +57,72 @@ jobs:
 | ---- | -------- | ------- | ----------- |
 | `github_token` | No | `${{ github.token }}` | Token for GitHub API authentication with `issues:read` permission. |
 | `azure_ai_foundry_endpoint` | No | - | Azure AI Foundry project endpoint URL (format: `https://<resource>.services.ai.azure.com/api/projects/<project>`). Falls back to `AZURE_AI_FOUNDRY_ENDPOINT` environment variable. |
-| `azure_ai_foundry_api_key` | No | - | Azure AI Foundry API key for authentication. Falls back to `AZURE_AI_FOUNDRY_API_KEY` environment variable. Store in GitHub Secrets. |
+| `azure_client_id` | No | - | Azure service principal client ID for OIDC authentication. Falls back to `AZURE_CLIENT_ID` environment variable. |
+| `azure_tenant_id` | No | - | Azure tenant ID for OIDC authentication. Falls back to `AZURE_TENANT_ID` environment variable. |
 | `azure_ai_foundry_model_deployment` | No | `gpt-5-mini` | Model deployment name in Azure AI Foundry project. Falls back to `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` environment variable. |
 | `azure_ai_foundry_api_version` | No | `2025-04-01-preview` | Azure AI Foundry API version. Falls back to `AZURE_AI_FOUNDRY_API_VERSION` environment variable. |
 | `enable_verbose_logging` | No | `false` | Enable verbose logging for troubleshooting. When enabled, logs detailed information about configuration, connections, and authentication at the Debug level. |
 
 ### Azure AI Foundry Configuration
 
-Issue Agent uses Azure AI Foundry for AI-powered issue analysis. To enable AI features:
+Issue Agent uses Azure AI Foundry for AI-powered issue analysis with OIDC authentication via Azure service principal. To enable AI features:
 
 #### 1. Create Azure AI Foundry Project
 
 1. Go to [Azure AI Foundry portal](https://ai.azure.com)
 2. Create a new project or use an existing one
 3. Note the project endpoint URL (Settings → Overview)
-4. Generate an API key (Settings → Keys and Endpoints)
+4. Note your resource group name and subscription ID
 
-#### 2. Add Secrets to GitHub
+#### 2. Create Azure Service Principal
+
+Create a service principal for GitHub Actions OIDC authentication:
+
+```bash
+# Replace with your values
+SUBSCRIPTION_ID="your-subscription-id"
+RESOURCE_GROUP="your-resource-group"
+APP_NAME="github-issueagent-sp"
+
+# Create the service principal
+az ad app create --display-name $APP_NAME
+
+# Get the app ID (client ID)
+CLIENT_ID=$(az ad app list --display-name $APP_NAME --query "[0].appId" -o tsv)
+
+# Create federated credential for GitHub OIDC
+az ad app federated-credential create \
+  --id $CLIENT_ID \
+  --parameters '{
+    "name": "github-actions-federated",
+    "issuer": "https://token.actions.githubusercontent.com",
+    "subject": "repo:YOUR_ORG/YOUR_REPO:ref:refs/heads/main",
+    "audiences": ["api://AzureADTokenExchange"]
+  }'
+
+# Get your tenant ID
+TENANT_ID=$(az account show --query tenantId -o tsv)
+
+# Assign Cognitive Services User role to the service principal
+az role assignment create \
+  --role "Cognitive Services User" \
+  --assignee $CLIENT_ID \
+  --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP
+```
+
+**Required Azure Permissions:**
+- **Cognitive Services User** role on the Azure AI Foundry resource group
+- This allows the service principal to call Azure AI services endpoints
+
+#### 3. Configure GitHub Repository
 
 Add these secrets to your repository (Settings → Secrets and variables → Actions):
 
-- `AZURE_AI_FOUNDRY_ENDPOINT`: Your project endpoint URL
-- `AZURE_AI_FOUNDRY_API_KEY`: Your API key
+- `AZURE_AI_FOUNDRY_ENDPOINT`: Your project endpoint URL (e.g., `https://my-project.services.ai.azure.com/api/projects/my-project`)
+- `AZURE_CLIENT_ID`: Service principal client ID (from step 2)
+- `AZURE_TENANT_ID`: Azure tenant ID (from step 2)
 
-#### 3. Update Workflow
+#### 4. Update Workflow with OIDC Permissions
 
 ```yaml
 name: Issue Context
@@ -93,15 +135,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: read
+      id-token: write  # Required for OIDC authentication
     steps:
       - name: Analyze Issue
         uses: mattdot/issueagent@v1
         with:
           github_token: ${{ github.token }}
           azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
-          azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+          azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
           azure_ai_foundry_model_deployment: gpt-4o-mini  # Optional: specify your model
 ```
+
+**Important**: The `id-token: write` permission is required for GitHub Actions to generate OIDC tokens.
 
 #### How Environment Variables Work
 
@@ -115,7 +161,8 @@ steps:
     with:
       github_token: ${{ github.token }}
       azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
-      azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+      azure_client_id: ${{ secrets.AZURE_CLIENT_ID }}
+      azure_tenant_id: ${{ secrets.AZURE_TENANT_ID }}
 ```
 
 **Option 2: Mix inputs and environment variables**
@@ -129,7 +176,7 @@ steps:
       azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
 ```
 
-The action internally checks inputs first, then falls back to `AZURE_AI_FOUNDRY_*` environment variables if inputs are not provided.
+The action internally checks inputs first, then falls back to `AZURE_*` environment variables if inputs are not provided.
 
 #### Connection Validation
 

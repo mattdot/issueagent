@@ -18,7 +18,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini",
             ApiVersion = "2025-04-01-preview",
             ConnectionTimeout = TimeSpan.FromSeconds(30)
@@ -36,7 +37,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = null!,
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-4o-mini"
         };
 
@@ -54,7 +56,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "http://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-4o-mini"
         };
 
@@ -71,7 +74,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://example.com/wrong",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini"
         };
 
@@ -82,37 +86,41 @@ public class AzureAIFoundryConfigurationValidationTests
     }
 
     [Fact]
-    public void MissingApiKey_ShouldThrowValidationException()
+    public void MissingClientId_ShouldThrowValidationException()
     {
         // Arrange
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "",
+            ClientId = "",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini"
         };
 
         // Act & Assert
         var exception = Assert.Throws<ValidationException>(() => config.Validate());
-        Assert.Contains("Azure AI Foundry API key is required", exception.Message);
-        Assert.Contains("azure_foundry_api_key", exception.Message);
-        Assert.Contains("AZURE_AI_FOUNDRY_API_KEY", exception.Message);
+        Assert.Contains("Azure client ID is required", exception.Message);
+        Assert.Contains("azure_client_id", exception.Message);
+        Assert.Contains("AZURE_CLIENT_ID", exception.Message);
     }
 
     [Fact]
-    public void ApiKeyTooShort_ShouldThrowValidationException()
+    public void MissingTenantId_ShouldThrowValidationException()
     {
         // Arrange
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "short",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "",
             ModelDeploymentName = "gpt-5-mini"
         };
 
         // Act & Assert
         var exception = Assert.Throws<ValidationException>(() => config.Validate());
-        Assert.Contains("Azure AI Foundry API key must be at least 32 characters", exception.Message);
+        Assert.Contains("Azure tenant ID is required", exception.Message);
+        Assert.Contains("azure_tenant_id", exception.Message);
+        Assert.Contains("AZURE_TENANT_ID", exception.Message);
     }
 
     [Fact]
@@ -122,7 +130,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini@latest"
         };
 
@@ -138,7 +147,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini",
             ApiVersion = "2024.10.21"
         };
@@ -156,7 +166,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini",
             ApiVersion = "2099-12-31"
         };
@@ -173,7 +184,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini",
             ConnectionTimeout = TimeSpan.FromSeconds(-5)
         };
@@ -190,7 +202,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini",
             ConnectionTimeout = TimeSpan.FromMinutes(6)
         };
@@ -207,7 +220,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = null!
         };
 
@@ -225,7 +239,8 @@ public class AzureAIFoundryConfigurationValidationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://ai-foundry-test.services.ai.azure.com/api/projects/test-project",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act

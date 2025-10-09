@@ -10,12 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: read
+      id-token: write  # Required for OIDC authentication
     steps:
       - name: Retrieve issue context
         uses: mattdot/issueagent@main
         with:
           github_token: ${{ github.token }}
           azure_ai_foundry_endpoint: ${{ vars.ISSUE_AGENT_ENDPOINT }}
-          azure_ai_foundry_api_key: ${{ secrets.ISSUE_AGENT_KEY }}
+          azure_client_id: ${{ vars.AZURE_CLIENT_ID }}
+          azure_tenant_id: ${{ vars.AZURE_TENANT_ID }}
           enable_verbose_logging: true
           
