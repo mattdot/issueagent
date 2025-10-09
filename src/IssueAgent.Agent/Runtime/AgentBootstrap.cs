@@ -248,8 +248,8 @@ public static class AgentBootstrap
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
             // Create authentication provider and client
-            logger?.LogDebug("Creating authentication provider with API key");
-            var authProvider = new ApiKeyAuthenticationProvider(configuration.ApiKey);
+            logger?.LogDebug("Creating OIDC authentication provider with client ID and tenant ID");
+            var authProvider = new OidcAuthenticationProvider(configuration.ClientId, configuration.TenantId);
             logger?.LogDebug("Creating Azure AI Foundry client with endpoint: {Endpoint}", TruncateEndpoint(configuration.Endpoint));
             var client = await authProvider.CreateClientAsync(
                 configuration.Endpoint,
@@ -428,25 +428,43 @@ public static class AgentBootstrap
         logger.LogDebug("Loading Azure AI Foundry configuration from environment variables");
         logger.LogDebug("Using endpoint from {Source}", !string.IsNullOrWhiteSpace(inputEndpoint) ? "INPUT_AZURE_AI_FOUNDRY_ENDPOINT" : "AZURE_AI_FOUNDRY_ENDPOINT");
 
-        var inputApiKey = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_KEY");
-        var envApiKey = Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY");
-        var apiKey = inputApiKey ?? envApiKey;
+        var inputClientId = Environment.GetEnvironmentVariable("INPUT_AZURE_CLIENT_ID");
+        var envClientId = Environment.GetEnvironmentVariable("AZURE_CLIENT_ID");
+        var clientId = inputClientId ?? envClientId;
 
         logger.LogDebug(
-            "API Key configuration: INPUT_AZURE_AI_FOUNDRY_API_KEY={InputSet}, AZURE_AI_FOUNDRY_API_KEY={EnvSet}",
-            !string.IsNullOrWhiteSpace(inputApiKey) ? "set" : "not set",
-            !string.IsNullOrWhiteSpace(envApiKey) ? "set" : "not set");
+            "Client ID configuration: INPUT_AZURE_CLIENT_ID={InputSet}, AZURE_CLIENT_ID={EnvSet}",
+            !string.IsNullOrWhiteSpace(inputClientId) ? "set" : "not set",
+            !string.IsNullOrWhiteSpace(envClientId) ? "set" : "not set");
 
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (string.IsNullOrWhiteSpace(clientId))
         {
             throw new InvalidOperationException(
-                "Azure AI Foundry API key is required when endpoint is provided. " +
-                "Set 'azure_ai_foundry_api_key' input or AZURE_AI_FOUNDRY_API_KEY environment variable.");
+                "Azure client ID is required when endpoint is provided. " +
+                "Set 'azure_client_id' input or AZURE_CLIENT_ID environment variable.");
         }
 
-        logger.LogDebug("Using API key from {Source} (length: {Length} characters)", 
-            !string.IsNullOrWhiteSpace(inputApiKey) ? "INPUT_AZURE_AI_FOUNDRY_API_KEY" : "AZURE_AI_FOUNDRY_API_KEY",
-            apiKey.Length);
+        logger.LogDebug("Using client ID from {Source}", 
+            !string.IsNullOrWhiteSpace(inputClientId) ? "INPUT_AZURE_CLIENT_ID" : "AZURE_CLIENT_ID");
+
+        var inputTenantId = Environment.GetEnvironmentVariable("INPUT_AZURE_TENANT_ID");
+        var envTenantId = Environment.GetEnvironmentVariable("AZURE_TENANT_ID");
+        var tenantId = inputTenantId ?? envTenantId;
+
+        logger.LogDebug(
+            "Tenant ID configuration: INPUT_AZURE_TENANT_ID={InputSet}, AZURE_TENANT_ID={EnvSet}",
+            !string.IsNullOrWhiteSpace(inputTenantId) ? "set" : "not set",
+            !string.IsNullOrWhiteSpace(envTenantId) ? "set" : "not set");
+
+        if (string.IsNullOrWhiteSpace(tenantId))
+        {
+            throw new InvalidOperationException(
+                "Azure tenant ID is required when endpoint is provided. " +
+                "Set 'azure_tenant_id' input or AZURE_TENANT_ID environment variable.");
+        }
+
+        logger.LogDebug("Using tenant ID from {Source}", 
+            !string.IsNullOrWhiteSpace(inputTenantId) ? "INPUT_AZURE_TENANT_ID" : "AZURE_TENANT_ID");
 
         var inputModelDeployment = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT");
         var envModelDeployment = Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT");
@@ -473,7 +491,8 @@ public static class AgentBootstrap
         return new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint,
-            ApiKey = apiKey,
+            ClientId = clientId,
+            TenantId = tenantId,
             ModelDeploymentName = modelDeployment,
             ApiVersion = apiVersion,
             ConnectionTimeout = TimeSpan.FromSeconds(30)

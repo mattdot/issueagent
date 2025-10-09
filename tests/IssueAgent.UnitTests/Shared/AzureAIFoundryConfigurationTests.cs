@@ -19,7 +19,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint,
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act & Assert
@@ -37,7 +38,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint!,
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act & Assert
@@ -56,7 +58,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = endpoint,
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act & Assert
@@ -65,13 +68,14 @@ public class AzureAIFoundryConfigurationTests
     }
 
     [Fact]
-    public void Validate_WithValidApiKey_ShouldNotThrow()
+    public void Validate_WithValidClientIdAndTenantId_ShouldNotThrow()
     {
         // Arrange
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act & Assert
@@ -80,20 +84,41 @@ public class AzureAIFoundryConfigurationTests
     }
 
     [Theory]
-    [InlineData("short")] // Too short
-    [InlineData("12345678901234567890123")] // 23 chars, less than 32
-    public void Validate_WithShortApiKey_ShouldThrow(string apiKey)
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Validate_WithNullOrEmptyClientId_ShouldThrow(string? clientId)
     {
         // Arrange
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = apiKey
+            ClientId = clientId!,
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act & Assert
         var exception = Assert.Throws<ValidationException>(() => config.Validate());
-        Assert.Contains("at least 32 characters", exception.Message);
+        Assert.Contains("client ID is required", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void Validate_WithNullOrEmptyTenantId_ShouldThrow(string? tenantId)
+    {
+        // Arrange
+        var config = new AzureAIFoundryConfiguration
+        {
+            Endpoint = "https://test.services.ai.azure.com/api/projects/test",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = tenantId!
+        };
+
+        // Act & Assert
+        var exception = Assert.Throws<ValidationException>(() => config.Validate());
+        Assert.Contains("tenant ID is required", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
@@ -107,7 +132,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = modelName
         };
 
@@ -127,7 +153,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = modelName
         };
 
@@ -146,7 +173,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ApiVersion = apiVersion
         };
 
@@ -166,7 +194,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ApiVersion = apiVersion
         };
 
@@ -182,7 +211,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = null!
         };
 
@@ -200,7 +230,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act
@@ -219,7 +250,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ConnectionTimeout = TimeSpan.FromSeconds(-5)
         };
 
@@ -235,7 +267,8 @@ public class AzureAIFoundryConfigurationTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ConnectionTimeout = TimeSpan.FromMinutes(10)
         };
 

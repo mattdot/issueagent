@@ -28,10 +28,14 @@ public class AzureAIFoundryConfiguration
     public required string Endpoint { get; set; }
 
     /// <summary>
-    /// API key for authentication.
-    /// Must be at least 32 characters.
+    /// Azure service principal client ID for OIDC authentication.
     /// </summary>
-    public required string ApiKey { get; set; }
+    public required string ClientId { get; set; }
+
+    /// <summary>
+    /// Azure tenant ID for OIDC authentication.
+    /// </summary>
+    public required string TenantId { get; set; }
 
     /// <summary>
     /// Name of the deployed model in Azure AI Foundry.
@@ -81,20 +85,23 @@ public class AzureAIFoundryConfiguration
                 $"Azure AI Foundry endpoint must end with '.services.ai.azure.com/api/projects/<project>'. Received: {TruncateEndpoint(Endpoint)}");
         }
 
-        // Validate API key
-        if (string.IsNullOrWhiteSpace(ApiKey))
+        // Validate client ID
+        if (string.IsNullOrWhiteSpace(ClientId))
         {
             throw new ValidationException(
-                "Azure AI Foundry API key is required. Provide 'azure_foundry_api_key' input or set AZURE_AI_FOUNDRY_API_KEY environment variable.");
+                "Azure client ID is required. Provide 'azure_client_id' input or set AZURE_CLIENT_ID environment variable.");
         }
 
-        ApiKey = ApiKey.Trim();
+        ClientId = ClientId.Trim();
 
-        if (ApiKey.Length < 32)
+        // Validate tenant ID
+        if (string.IsNullOrWhiteSpace(TenantId))
         {
             throw new ValidationException(
-                "Azure AI Foundry API key must be at least 32 characters. Check the API key in Azure AI Foundry portal under 'Keys and Endpoint'.");
+                "Azure tenant ID is required. Provide 'azure_tenant_id' input or set AZURE_TENANT_ID environment variable.");
         }
+
+        TenantId = TenantId.Trim();
 
         // Validate and apply default for model deployment name
         if (string.IsNullOrWhiteSpace(ModelDeploymentName))

@@ -18,7 +18,8 @@ public class ConnectionTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = GetTestEndpoint(),
-            ApiKey = GetTestApiKey(),
+            ClientId = GetTestClientId(),
+            TenantId = GetTestTenantId(),
             ModelDeploymentName = "gpt-5-mini",
             ApiVersion = "2025-04-01-preview",
             ConnectionTimeout = TimeSpan.FromSeconds(30)
@@ -41,7 +42,8 @@ public class ConnectionTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = null!,
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345"
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321"
         };
 
         // Act
@@ -56,13 +58,14 @@ public class ConnectionTests
     }
 
     [Fact(Skip = "Requires a fake/invalid endpoint that returns authentication errors - hardcoded test endpoint may not behave as expected")]
-    public async Task InvalidApiKey_ShouldFailWithAuthenticationError()
+    public async Task InvalidCredentials_ShouldFailWithAuthenticationError()
     {
         // Arrange
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://test.services.ai.azure.com/api/projects/test",
-            ApiKey = "invalid-api-key-0123456789abcdef",
+            ClientId = "00000000-0000-0000-0000-000000000000",
+            TenantId = "00000000-0000-0000-0000-000000000000",
             ModelDeploymentName = "gpt-5-mini",
             ConnectionTimeout = TimeSpan.FromSeconds(30)
         };
@@ -74,8 +77,7 @@ public class ConnectionTests
         Assert.False(result.IsSuccess);
         Assert.Null(result.Client);
         Assert.NotNull(result.ErrorMessage);
-        Assert.Contains("Authentication to Azure AI Foundry failed", result.ErrorMessage);
-        Assert.Contains("verify API key", result.ErrorMessage, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Authentication failed", result.ErrorMessage);
         Assert.Equal(ConnectionErrorCategory.AuthenticationFailure, result.ErrorCategory);
     }
 
@@ -86,7 +88,8 @@ public class ConnectionTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "http://example.com/wrong",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini"
         };
 
@@ -108,7 +111,8 @@ public class ConnectionTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = GetTestEndpoint(),
-            ApiKey = GetTestApiKey(),
+            ClientId = GetTestClientId(),
+            TenantId = GetTestTenantId(),
             ModelDeploymentName = "nonexistent-model",
             ConnectionTimeout = TimeSpan.FromSeconds(30)
         };
@@ -133,7 +137,8 @@ public class ConnectionTests
         var config = new AzureAIFoundryConfiguration
         {
             Endpoint = "https://unreachable.services.ai.azure.com/api/projects/test",
-            ApiKey = "abcdefghijklmnopqrstuvwxyz012345",
+            ClientId = "12345678-1234-1234-1234-123456789012",
+            TenantId = "87654321-4321-4321-4321-210987654321",
             ModelDeploymentName = "gpt-5-mini",
             ConnectionTimeout = TimeSpan.FromSeconds(30)
         };
@@ -161,9 +166,15 @@ public class ConnectionTests
             ?? "https://test.services.ai.azure.com/api/projects/test";
     }
 
-    private static string GetTestApiKey()
+    private static string GetTestClientId()
     {
-        return Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY")
-            ?? "test-api-key-0123456789abcdef0123456789abcdef";
+        return Environment.GetEnvironmentVariable("AZURE_CLIENT_ID")
+            ?? "12345678-1234-1234-1234-123456789012";
+    }
+
+    private static string GetTestTenantId()
+    {
+        return Environment.GetEnvironmentVariable("AZURE_TENANT_ID")
+            ?? "87654321-4321-4321-4321-210987654321";
     }
 }
