@@ -1,0 +1,20 @@
+name: Issue Agent
+on:
+  issues:
+    types: [opened, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  issue-context:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    steps:
+      - name: Retrieve issue context
+        uses: mattdot/issueagent@main
+        with:
+          github_token: ${{ github.token }}
+          azure_ai_foundry_endpoint: ${{ vars.ISSUE_AGENT_ENDPOINT }}
+          azure_ai_foundry_api_key: ${{ secrets.ISSUE_AGENT_KEY }}
+          
