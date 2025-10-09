@@ -8,15 +8,15 @@ namespace IssueAgent.Shared.Models;
 public class AzureAIFoundryConfiguration
 {
     private const string DefaultModelDeploymentName = "gpt-5-mini";
-    
+
     /// <summary>
     /// Default API version for Azure AI Foundry connections.
     /// </summary>
     public const string DefaultApiVersion = "2025-04-01-preview";
-    
+
     private static readonly TimeSpan DefaultConnectionTimeout = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaxConnectionTimeout = TimeSpan.FromMinutes(5);
-    
+
     private static readonly Regex EndpointPattern = new(@"^https://[^/]+\.services\.ai\.azure\.com/api/projects/[^/]+$", RegexOptions.Compiled);
     private static readonly Regex ModelNamePattern = new(@"^[a-zA-Z0-9-]+$", RegexOptions.Compiled);
     private static readonly Regex ApiVersionPattern = new(@"^\d{4}-\d{2}-\d{2}(-preview)?$", RegexOptions.Compiled);

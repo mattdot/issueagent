@@ -60,6 +60,7 @@ jobs:
 | `azure_ai_foundry_api_key` | No | - | Azure AI Foundry API key for authentication. Falls back to `AZURE_AI_FOUNDRY_API_KEY` environment variable. Store in GitHub Secrets. |
 | `azure_ai_foundry_model_deployment` | No | `gpt-5-mini` | Model deployment name in Azure AI Foundry project. Falls back to `AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT` environment variable. |
 | `azure_ai_foundry_api_version` | No | `2025-04-01-preview` | Azure AI Foundry API version. Falls back to `AZURE_AI_FOUNDRY_API_VERSION` environment variable. |
+| `enable_verbose_logging` | No | `false` | Enable verbose logging for troubleshooting. When enabled, logs detailed information about configuration, connections, and authentication at the Debug level. |
 
 ### Azure AI Foundry Configuration
 
@@ -139,6 +140,48 @@ The action validates the Azure AI Foundry connection during startup:
 - Logs connection success with duration metrics
 
 Failed connections will cause the action to fail with a descriptive error message.
+
+## Troubleshooting
+
+### Enable Verbose Logging
+
+If you're experiencing issues with the action (such as authentication failures or connection problems), enable verbose logging to get detailed diagnostic information:
+
+```yaml
+steps:
+  - name: Analyze Issue
+    uses: mattdot/issueagent@v1
+    with:
+      github_token: ${{ github.token }}
+      azure_ai_foundry_endpoint: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
+      azure_ai_foundry_api_key: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+      enable_verbose_logging: true
+```
+
+When verbose logging is enabled, the action will output:
+- Configuration loading details (which environment variables are set)
+- Azure AI Foundry connection attempts and responses
+- Authentication provider initialization
+- API request/response status codes
+- Detailed error messages for troubleshooting
+
+**Security Note**: Verbose logs do NOT contain API keys or tokens - these are always redacted for security.
+
+### Common Issues
+
+**Authentication Error (401)**:
+- Verify your API key is correct and has not expired
+- Check that the API key has access to the specified endpoint
+- Ensure the endpoint URL is correct (format: `https://<resource>.services.ai.azure.com/api/projects/<project>`)
+
+**Connection Timeout**:
+- Check network connectivity to Azure AI Foundry
+- Verify the endpoint URL is accessible from GitHub Actions runners
+- Consider firewall or proxy settings in your organization
+
+**Model Not Found (404)**:
+- Verify the model deployment name matches your Azure AI Foundry configuration
+- Check that the model is deployed and available in your project
 
 ## Current Status & Roadmap
 

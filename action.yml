@@ -22,6 +22,10 @@ inputs:
   azure_ai_foundry_api_version:
     description: "Azure AI Foundry API version (format: YYYY-MM-DD or YYYY-MM-DD-preview). Defaults to '2025-04-01-preview' if not provided."
     required: false
+  enable_verbose_logging:
+    description: "Enable verbose logging for troubleshooting. When enabled, logs detailed information about configuration, connections, and authentication. Defaults to 'false'."
+    required: false
+    default: 'false'
 runs:
   using: "docker"
   image: "Dockerfile"
@@ -31,3 +35,4 @@ runs:
     AZURE_AI_FOUNDRY_API_KEY: ${{ inputs.azure_ai_foundry_api_key }}
     AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT: ${{ inputs.azure_ai_foundry_model_deployment }}
     AZURE_AI_FOUNDRY_API_VERSION: ${{ inputs.azure_ai_foundry_api_version }}
+    ENABLE_VERBOSE_LOGGING: ${{ inputs.enable_verbose_logging }}

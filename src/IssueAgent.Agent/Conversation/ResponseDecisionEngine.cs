@@ -32,10 +32,10 @@ public class ResponseDecisionEngine
     {
         if (history == null || history.Count == 0)
         {
-            return new ResponseDecisionResult 
-            { 
-                Decision = ResponseDecision.Skip, 
-                Reason = "No conversation history" 
+            return new ResponseDecisionResult
+            {
+                Decision = ResponseDecision.Skip,
+                Reason = "No conversation history"
             };
         }
 
@@ -44,28 +44,28 @@ public class ResponseDecisionEngine
         // Don't respond to our own messages
         if (latestMessage.Role == MessageRole.Assistant)
         {
-            return new ResponseDecisionResult 
-            { 
-                Decision = ResponseDecision.Skip, 
-                Reason = "Latest message is from the agent" 
+            return new ResponseDecisionResult
+            {
+                Decision = ResponseDecision.Skip,
+                Reason = "Latest message is from the agent"
             };
         }
 
         // Check for @mentions (must respond)
         if (ContainsMention(latestMessage.Text))
         {
-            return new ResponseDecisionResult 
-            { 
-                Decision = ResponseDecision.MustRespond, 
-                Reason = $"@mention of {AgentName} detected" 
+            return new ResponseDecisionResult
+            {
+                Decision = ResponseDecision.MustRespond,
+                Reason = $"@mention of {AgentName} detected"
             };
         }
 
         // Otherwise skip - the AI model will decide if it should respond based on context
-        return new ResponseDecisionResult 
-        { 
-            Decision = ResponseDecision.Skip, 
-            Reason = "No mention detected" 
+        return new ResponseDecisionResult
+        {
+            Decision = ResponseDecision.Skip,
+            Reason = "No mention detected"
         };
     }
 

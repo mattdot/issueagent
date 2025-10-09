@@ -157,13 +157,13 @@ public class ConnectionTests
 
     private static string GetTestEndpoint()
     {
-        return Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT") 
+        return Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT")
             ?? "https://test.services.ai.azure.com/api/projects/test";
     }
 
     private static string GetTestApiKey()
     {
-        return Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY") 
+        return Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY")
             ?? "test-api-key-0123456789abcdef0123456789abcdef";
     }
 }

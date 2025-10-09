@@ -44,10 +44,10 @@ public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvide
         // Create a client with API key authentication
         // Azure AI Foundry requires the API key to be sent in the "api-key" header, not as a bearer token
         var options = new PersistentAgentsAdministrationClientOptions();
-        
+
         // Add our custom policy to inject the api-key header
         options.AddPolicy(new ApiKeyAuthenticationPolicy(_apiKey), HttpPipelinePosition.PerCall);
-        
+
         // Use a no-op TokenCredential since we're handling auth via the custom policy
         var credential = new NoOpTokenCredential();
         var client = new PersistentAgentsClient(endpoint, credential, options);
@@ -78,10 +78,10 @@ public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvide
         {
             // Add the api-key header for Azure AI Foundry authentication
             message.Request.Headers.SetValue("api-key", _apiKey);
-            
+
             // Remove the Authorization header if present (from the NoOpTokenCredential)
             message.Request.Headers.Remove("Authorization");
-            
+
             ProcessNext(message, pipeline);
         }
 
@@ -89,10 +89,10 @@ public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvide
         {
             // Add the api-key header for Azure AI Foundry authentication
             message.Request.Headers.SetValue("api-key", _apiKey);
-            
+
             // Remove the Authorization header if present (from the NoOpTokenCredential)
             message.Request.Headers.Remove("Authorization");
-            
+
             return ProcessNextAsync(message, pipeline);
         }
     }

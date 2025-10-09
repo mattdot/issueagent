@@ -44,22 +44,38 @@ public static class AgentBootstrap
                 options.SingleLine = true;
                 options.TimestampFormat = "HH:mm:ss ";
             });
-            builder.SetMinimumLevel(LogLevel.Information);
+
+            // Check for verbose logging flag
+            var verboseLogging = ReadVerboseLoggingFlag();
+            builder.SetMinimumLevel(verboseLogging ? LogLevel.Debug : LogLevel.Information);
         });
 
         var logger = loggerFactory.CreateLogger("IssueAgent");
 
+        // Log if verbose mode is enabled
+        var verboseLogging = ReadVerboseLoggingFlag();
+        if (verboseLogging)
+        {
+            logger.LogDebug("Verbose logging enabled");
+        }
+
         LogMetadata(logger, environment.Metadata);
 
         // Initialize Azure AI Foundry connection if configured
-        var azureFoundryConfig = LoadAzureAIFoundryConfiguration();
+        var azureFoundryConfig = LoadAzureAIFoundryConfiguration(logger);
         Azure.AI.Agents.Persistent.PersistentAgentsClient? agentClient = null;
         string? modelDeploymentName = null;
-        
+
         if (azureFoundryConfig != null)
         {
             logger.LogInformation("Initializing Azure AI Foundry connection...");
-            var connectionResult = await InitializeAzureAIFoundryAsync(azureFoundryConfig, cancellationToken).ConfigureAwait(false);
+            logger.LogDebug(
+                "Azure AI Foundry configuration: Endpoint={Endpoint}, ModelDeployment={ModelDeployment}, ApiVersion={ApiVersion}",
+                TruncateEndpoint(azureFoundryConfig.Endpoint),
+                azureFoundryConfig.ModelDeploymentName ?? "gpt-5-mini",
+                azureFoundryConfig.ApiVersion ?? AzureAIFoundryConfiguration.DefaultApiVersion);
+
+            var connectionResult = await InitializeAzureAIFoundryAsync(azureFoundryConfig, logger, cancellationToken).ConfigureAwait(false);
 
             if (!connectionResult.IsSuccess)
             {
@@ -75,7 +91,7 @@ public static class AgentBootstrap
                 "Azure AI Foundry connection established in {Duration}ms to endpoint {EndpointSuffix}",
                 connectionResult.Duration.TotalMilliseconds,
                 connectionResult.AttemptedEndpoint);
-            
+
             agentClient = connectionResult.Client;
             modelDeploymentName = azureFoundryConfig.ModelDeploymentName;
         }
@@ -89,28 +105,28 @@ public static class AgentBootstrap
         var graphQlClient = new GitHubGraphQLClient(environment.Token, graphQlLogger, endpoint: graphQlEndpoint);
         var queryExecutor = new IssueContextQueryExecutor(graphQlClient);
         var metricsRecorder = new LoggingStartupMetricsRecorder(loggerFactory.CreateLogger<LoggingStartupMetricsRecorder>());
-        
+
         // Create conversation components
         var botLogin = Environment.GetEnvironmentVariable("BOT_LOGIN") ?? "github-actions[bot]";
         var historyBuilder = new IssueAgent.Agent.Conversation.ConversationHistoryBuilder(botLogin);
         var decisionEngine = new IssueAgent.Agent.Conversation.ResponseDecisionEngine();
-        
+
         // Create AI response generator
         var responseGeneratorLogger = loggerFactory.CreateLogger<IssueAgent.Agent.Conversation.AgentResponseGenerator>();
         var responseGenerator = new IssueAgent.Agent.Conversation.AgentResponseGenerator(
             agentClient,
             modelDeploymentName,
             responseGeneratorLogger);
-        
+
         // Create comment poster for posting responses
         var commentPosterLogger = loggerFactory.CreateLogger<IssueAgent.Agent.GitHub.GitHubCommentPoster>();
         var apiBaseUrl = Environment.GetEnvironmentVariable("GITHUB_API_URL");
         var commentPoster = new IssueAgent.Agent.GitHub.GitHubCommentPoster(environment.Token, commentPosterLogger, apiBaseUrl);
-        
+
         var agentLogger = loggerFactory.CreateLogger<IssueContextAgent>();
         var agent = new IssueContextAgent(
-            new GitHubTokenGuard(), 
-            queryExecutor, 
+            new GitHubTokenGuard(),
+            queryExecutor,
             metricsRecorder,
             historyBuilder,
             decisionEngine,
@@ -128,7 +144,7 @@ public static class AgentBootstrap
                     environment.Request.RunId,
                     environment.Request.EventType,
                     "Triggered by bot or user without write/maintain/admin permissions");
-                
+
                 LogResult(logger, skipResult);
                 return 0; // Success exit code for skipped execution
             }
@@ -194,6 +210,21 @@ public static class AgentBootstrap
         AzureAIFoundryConfiguration configuration,
         CancellationToken cancellationToken = default)
     {
+        return await InitializeAzureAIFoundryAsync(configuration, null, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Initializes and validates connection to Azure AI Foundry with optional verbose logging.
+    /// </summary>
+    /// <param name="configuration">Azure AI Foundry configuration with endpoint, API key, model deployment, and API version.</param>
+    /// <param name="logger">Optional logger for verbose diagnostic output.</param>
+    /// <param name="cancellationToken">Cancellation token to abort the connection attempt.</param>
+    /// <returns>Connection result with client instance on success or error details on failure.</returns>
+    public static async Task<AzureAIFoundryConnectionResult> InitializeAzureAIFoundryAsync(
+        AzureAIFoundryConfiguration configuration,
+        ILogger? logger,
+        CancellationToken cancellationToken = default)
+    {
         if (configuration == null)
         {
             throw new ArgumentNullException(nameof(configuration));
@@ -205,27 +236,34 @@ public static class AgentBootstrap
         try
         {
             // Validate configuration before attempting connection
+            logger?.LogDebug("Validating Azure AI Foundry configuration");
             configuration.Validate();
+            logger?.LogDebug("Configuration validation successful");
 
             // Create timeout enforcement
             using var timeoutCts = new CancellationTokenSource(configuration.ConnectionTimeout);
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
             // Create authentication provider and client
+            logger?.LogDebug("Creating authentication provider with API key");
             var authProvider = new ApiKeyAuthenticationProvider(configuration.ApiKey);
+            logger?.LogDebug("Creating Azure AI Foundry client with endpoint: {Endpoint}", TruncateEndpoint(configuration.Endpoint));
             var client = await authProvider.CreateClientAsync(
                 configuration.Endpoint,
                 linkedCts.Token).ConfigureAwait(false);
+            logger?.LogDebug("Client created successfully");
 
             // Validate connection by attempting to get the Administration client
             // This ensures the endpoint is reachable and credentials are valid
             // We use a minimal operation to avoid creating test resources
             try
             {
+                logger?.LogDebug("Validating connection by accessing Administration client");
                 // Simple connectivity check - accessing Administration property
                 // The actual API call will happen when we use the agent in production
                 var administrationClient = client.Administration;
-                
+                logger?.LogDebug("Administration client accessed successfully");
+
                 // Note: We don't perform actual agent creation/deletion here to avoid polluting
                 // the Azure AI Foundry environment. The client construction and property access
                 // validates that credentials and endpoint are structurally correct.
@@ -234,6 +272,7 @@ public static class AgentBootstrap
             catch (RequestFailedException ex) when (ex.Status == 404)
             {
                 // Model/deployment not found (this would happen during actual agent operations)
+                logger?.LogDebug("Request failed with 404 - Model/deployment not found");
                 stopwatch.Stop();
                 return AzureAIFoundryConnectionResult.Failure(
                     $"Model deployment '{configuration.ModelDeploymentName ?? "gpt-5-mini"}' not found. Verify the deployment name in Azure AI Foundry.",
@@ -244,6 +283,7 @@ public static class AgentBootstrap
             catch (RequestFailedException ex) when (ex.Status == 401 || ex.Status == 403)
             {
                 // Authentication failure
+                logger?.LogDebug("Request failed with {StatusCode} - Authentication failure: {Message}", ex.Status, ex.Message);
                 stopwatch.Stop();
                 return AzureAIFoundryConnectionResult.Failure(
                     $"Authentication failed. Verify the API key has access to the endpoint. Status: {ex.Status}",
@@ -254,6 +294,7 @@ public static class AgentBootstrap
             catch (RequestFailedException ex) when (ex.Status == 429)
             {
                 // Quota exceeded
+                logger?.LogDebug("Request failed with 429 - Quota exceeded: {Message}", ex.Message);
                 stopwatch.Stop();
                 return AzureAIFoundryConnectionResult.Failure(
                     "Azure AI Foundry quota exceeded. Check your subscription limits and usage.",
@@ -264,6 +305,7 @@ public static class AgentBootstrap
             catch (RequestFailedException ex) when (ex.Status == 400 && ex.Message.Contains("api-version"))
             {
                 // API version unsupported
+                logger?.LogDebug("Request failed with 400 - API version unsupported: {Message}", ex.Message);
                 stopwatch.Stop();
                 return AzureAIFoundryConnectionResult.Failure(
                     $"API version '{configuration.ApiVersion ?? AzureAIFoundryConfiguration.DefaultApiVersion}' is not supported by the endpoint. Use a supported version like '{AzureAIFoundryConfiguration.DefaultApiVersion}'.",
@@ -274,6 +316,7 @@ public static class AgentBootstrap
             catch (RequestFailedException ex)
             {
                 // Other Azure request failures
+                logger?.LogDebug("Request failed with {StatusCode} - {Message}", ex.Status, ex.Message);
                 stopwatch.Stop();
                 return AzureAIFoundryConnectionResult.Failure(
                     $"Azure AI Foundry request failed: {ex.Message} (Status: {ex.Status})",
@@ -282,18 +325,20 @@ public static class AgentBootstrap
                     stopwatch.Elapsed);
             }
 
+            logger?.LogDebug("Connection validation completed successfully");
             stopwatch.Stop();
             return AzureAIFoundryConnectionResult.Success(client, attemptedEndpoint, stopwatch.Elapsed);
         }
         catch (ValidationException validationEx)
         {
+            logger?.LogDebug("Validation exception: {Message}", validationEx.Message);
             stopwatch.Stop();
-            
+
             // Distinguish between missing configuration and invalid configuration
             var errorCategory = validationEx.Message.Contains("is required", StringComparison.OrdinalIgnoreCase)
                 ? ConnectionErrorCategory.MissingConfiguration
                 : ConnectionErrorCategory.InvalidConfiguration;
-            
+
             return AzureAIFoundryConnectionResult.Failure(
                 validationEx.Message,
                 errorCategory,
@@ -303,6 +348,7 @@ public static class AgentBootstrap
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             // External cancellation (user/system requested) - not a timeout
+            logger?.LogDebug("Connection cancelled by caller");
             stopwatch.Stop();
             return AzureAIFoundryConnectionResult.Failure(
                 "Connection attempt was cancelled by the caller.",
@@ -313,6 +359,7 @@ public static class AgentBootstrap
         catch (OperationCanceledException)
         {
             // Timeout cancellation (exceeded ConnectionTimeout)
+            logger?.LogDebug("Connection timed out after {TimeoutSeconds}s", configuration.ConnectionTimeout.TotalSeconds);
             stopwatch.Stop();
             return AzureAIFoundryConnectionResult.Failure(
                 $"Connection attempt timed out after {configuration.ConnectionTimeout.TotalSeconds:F1} seconds. Check network connectivity and endpoint availability.",
@@ -322,6 +369,7 @@ public static class AgentBootstrap
         }
         catch (HttpRequestException httpEx) when (httpEx.InnerException is SocketException)
         {
+            logger?.LogDebug("Network error (SocketException): {Message}", httpEx.Message);
             stopwatch.Stop();
             return AzureAIFoundryConnectionResult.Failure(
                 $"Network error connecting to Azure AI Foundry: {httpEx.Message}. Check endpoint URL and network connectivity.",
@@ -331,6 +379,7 @@ public static class AgentBootstrap
         }
         catch (HttpRequestException httpEx)
         {
+            logger?.LogDebug("HTTP error: {Message}", httpEx.Message);
             stopwatch.Stop();
             return AzureAIFoundryConnectionResult.Failure(
                 $"HTTP error connecting to Azure AI Foundry: {httpEx.Message}",
@@ -340,6 +389,7 @@ public static class AgentBootstrap
         }
         catch (Exception ex)
         {
+            logger?.LogDebug("Unexpected exception: {ExceptionType} - {Message}", ex.GetType().Name, ex.Message);
             stopwatch.Stop();
             return AzureAIFoundryConnectionResult.Failure(
                 $"Unexpected error initializing Azure AI Foundry: {ex.GetType().Name} - {ex.Message}",
@@ -353,7 +403,7 @@ public static class AgentBootstrap
     /// Loads Azure AI Foundry configuration from action inputs or environment variables.
     /// Returns null if Azure AI Foundry is not configured (optional feature).
     /// </summary>
-    private static AzureAIFoundryConfiguration? LoadAzureAIFoundryConfiguration()
+    private static AzureAIFoundryConfiguration? LoadAzureAIFoundryConfiguration(ILogger logger)
     {
         // Check if Azure AI Foundry is configured (endpoint is the required field)
         var endpoint = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_ENDPOINT")
@@ -362,8 +412,11 @@ public static class AgentBootstrap
         if (string.IsNullOrWhiteSpace(endpoint))
         {
             // Azure AI Foundry not configured - this is optional
+            logger.LogDebug("Azure AI Foundry endpoint not configured - skipping initialization");
             return null;
         }
+
+        logger.LogDebug("Loading Azure AI Foundry configuration from environment variables");
 
         var apiKey = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_KEY")
             ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY")
@@ -376,6 +429,10 @@ public static class AgentBootstrap
 
         var apiVersion = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_VERSION")
             ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_VERSION");
+
+        logger.LogDebug(
+            "Azure AI Foundry configuration loaded successfully - API key present: {ApiKeyPresent}",
+            !string.IsNullOrWhiteSpace(apiKey));
 
         return new AzureAIFoundryConfiguration
         {
@@ -400,7 +457,7 @@ public static class AgentBootstrap
 
     private static string? ReadToken()
     {
-    var explicitToken = ReadInputVariable("github_token");
+        var explicitToken = ReadInputVariable("github_token");
         if (!string.IsNullOrWhiteSpace(explicitToken))
         {
             return explicitToken;
@@ -473,6 +530,41 @@ public static class AgentBootstrap
         return Math.Clamp(parsed, minValue, maxValue);
     }
 
+    private static bool ReadVerboseLoggingFlag()
+    {
+        // Check INPUT_ENABLE_VERBOSE_LOGGING first (from GitHub Actions input)
+        var input = Environment.GetEnvironmentVariable("INPUT_ENABLE_VERBOSE_LOGGING");
+        if (!string.IsNullOrWhiteSpace(input))
+        {
+            return string.Equals(input, "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Fallback to ENABLE_VERBOSE_LOGGING environment variable
+        var env = Environment.GetEnvironmentVariable("ENABLE_VERBOSE_LOGGING");
+        if (!string.IsNullOrWhiteSpace(env))
+        {
+            return string.Equals(env, "true", StringComparison.OrdinalIgnoreCase);
+        }
+
+        return false;
+    }
+
+    private static string TruncateEndpoint(string endpoint)
+    {
+        // Show only the last 40 characters for security
+        if (string.IsNullOrWhiteSpace(endpoint))
+        {
+            return "[empty]";
+        }
+
+        if (endpoint.Length <= 40)
+        {
+            return endpoint;
+        }
+
+        return "..." + endpoint.Substring(endpoint.Length - 37);
+    }
+
     private static IssueContextRequest CreateRequest(string repository, string eventName, string runId, int commentsPageSize, JsonElement payload)
     {
         var segments = repository.Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
@@ -538,7 +630,7 @@ public static class AgentBootstrap
                     {
                         "OWNER", "MEMBER", "COLLABORATOR", "MAINTAINER"
                     };
-                    
+
                     if (!allowedAssociations.Contains(association))
                     {
                         return true;

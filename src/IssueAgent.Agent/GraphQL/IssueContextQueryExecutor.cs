@@ -114,19 +114,19 @@ public class IssueContextQueryExecutor
     private static bool IsInsufficientScopes(GraphQLError? error)
         => error?.Code is not null && error.Code.Equals("INSUFFICIENT_SCOPES", StringComparison.OrdinalIgnoreCase);
 
-        private static string BuildQuery(IssueContextRequest request)
+    private static string BuildQuery(IssueContextRequest request)
+    {
+        static string Quote(string value)
         {
-                static string Quote(string value)
-                {
-                    var encoded = JsonEncodedText.Encode(value ?? string.Empty);
-                    return $"\"{encoded}\"";
-                }
+            var encoded = JsonEncodedText.Encode(value ?? string.Empty);
+            return $"\"{encoded}\"";
+        }
 
-                var ownerLiteral = Quote(request.Owner);
-                var nameLiteral = Quote(request.Name);
-                var commentsPageSize = Math.Clamp(request.CommentsPageSize, 1, 20);
+        var ownerLiteral = Quote(request.Owner);
+        var nameLiteral = Quote(request.Name);
+        var commentsPageSize = Math.Clamp(request.CommentsPageSize, 1, 20);
 
-                var query = $$"""
+        var query = $$"""
                         query IssueContextQuery {
                             repository(owner: {{ownerLiteral}}, name: {{nameLiteral}}) {
                                 issue(number: {{request.IssueNumber}}) {
@@ -154,6 +154,6 @@ public class IssueContextQueryExecutor
                         }
                         """;
 
-                return query.Trim();
-        }
+        return query.Trim();
+    }
 }

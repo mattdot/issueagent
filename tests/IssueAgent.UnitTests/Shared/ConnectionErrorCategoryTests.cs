@@ -45,7 +45,7 @@ public class ConnectionErrorCategoryTests
     [InlineData(ConnectionErrorCategory.ApiVersionUnsupported, "ApiVersionUnsupported")]
     [InlineData(ConnectionErrorCategory.UnknownError, "UnknownError")]
     public void ConnectionErrorCategory_ToString_ShouldReturnCorrectName(
-        ConnectionErrorCategory category, 
+        ConnectionErrorCategory category,
         string expectedName)
     {
         // Act

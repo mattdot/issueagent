@@ -39,7 +39,7 @@ public class ConversationHistoryBuilderTests
         {
             CommentSnapshot.Create("C1", "github-actions[bot]", "Bot comment <!-- issueagent-signature -->", DateTime.UtcNow)
         };
-        
+
         var issue = IssueSnapshot.Create(
             "ISSUE_1",
             42,
@@ -64,7 +64,7 @@ public class ConversationHistoryBuilderTests
         {
             CommentSnapshot.Create("C1", "github-actions[bot]", "Bot comment without signature", DateTime.UtcNow)
         };
-        
+
         var issue = IssueSnapshot.Create(
             "ISSUE_1",
             42,
@@ -89,7 +89,7 @@ public class ConversationHistoryBuilderTests
         {
             CommentSnapshot.Create("C1", "some-other-bot", "Comment with <!-- issueagent-signature --> marker", DateTime.UtcNow)
         };
-        
+
         var issue = IssueSnapshot.Create(
             "ISSUE_1",
             42,
@@ -117,7 +117,7 @@ public class ConversationHistoryBuilderTests
             CommentSnapshot.Create("C2", "user2", "Second", now.AddMinutes(-5)),
             CommentSnapshot.Create("C3", "user3", "Third", now)
         };
-        
+
         var issue = IssueSnapshot.Create(
             "ISSUE_1",
             42,

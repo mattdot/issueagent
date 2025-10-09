@@ -44,7 +44,7 @@ public class ApiKeyAuthenticationProviderTests
     public void CreateClientAsync_WithNullApiKey_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentException>(() => 
+        Assert.Throws<ArgumentException>(() =>
             new ApiKeyAuthenticationProvider(null!));
     }
 
@@ -52,7 +52,7 @@ public class ApiKeyAuthenticationProviderTests
     public void CreateClientAsync_WithEmptyApiKey_ShouldThrowArgumentException()
     {
         // Arrange & Act & Assert
-        Assert.Throws<ArgumentException>(() => 
+        Assert.Throws<ArgumentException>(() =>
             new ApiKeyAuthenticationProvider(string.Empty));
     }
 
@@ -64,7 +64,7 @@ public class ApiKeyAuthenticationProviderTests
         var cts = new CancellationTokenSource();
 
         // Act & Assert
-        await Assert.ThrowsAsync<ArgumentException>(() => 
+        await Assert.ThrowsAsync<ArgumentException>(() =>
             provider.CreateClientAsync(null!, cts.Token));
     }
 
@@ -78,7 +78,7 @@ public class ApiKeyAuthenticationProviderTests
         cts.Cancel();
 
         // Act & Assert
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => 
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             provider.CreateClientAsync(endpoint, cts.Token));
     }
 }

@@ -35,7 +35,7 @@ public class GitHubGraphQLClient : IGraphQLClient
         {
             BaseAddress = endpoint ?? DefaultEndpoint
         };
-        
+
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("bearer", token);
         _httpClient.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(productName ?? "issueagent", productVersion ?? "1.0"));
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
