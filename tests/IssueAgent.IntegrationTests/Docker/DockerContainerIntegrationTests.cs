@@ -196,6 +196,57 @@ public class DockerContainerIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task DockerContainer_ShouldLoadAzureAIFoundryCredentials_FromActionInputs()
+    {
+        var testToken = Environment.GetEnvironmentVariable("TEST_PAT");
+        var testRepo = Environment.GetEnvironmentVariable("TEST_REPO");
+        var azureEndpoint = Environment.GetEnvironmentVariable("TEST_AZURE_AI_FOUNDRY_ENDPOINT");
+        var azureApiKey = Environment.GetEnvironmentVariable("TEST_AZURE_AI_FOUNDRY_API_KEY");
+        
+        if (string.IsNullOrWhiteSpace(testToken) || string.IsNullOrWhiteSpace(testRepo))
+        {
+            _output.WriteLine("Skipping Azure AI Foundry test: TEST_PAT and TEST_REPO environment variables are required");
+            return;
+        }
+        
+        if (string.IsNullOrWhiteSpace(azureEndpoint) || string.IsNullOrWhiteSpace(azureApiKey))
+        {
+            _output.WriteLine("Skipping Azure AI Foundry test: TEST_AZURE_AI_FOUNDRY_ENDPOINT and TEST_AZURE_AI_FOUNDRY_API_KEY environment variables are required");
+            return;
+        }
+
+        await BuildDockerImage();
+
+        var eventPayload = CreateIssueOpenedEventPayload(testRepo, 2);
+        var tempEventFile = await CreateTempEventFile(eventPayload);
+
+        try
+        {
+            // Test with Azure AI Foundry credentials passed as INPUT_ variables (mimicking GitHub Actions)
+            var result = await RunDockerContainerWithAzureFoundry(
+                testToken, 
+                testRepo, 
+                tempEventFile,
+                azureEndpoint,
+                azureApiKey);
+
+            _output.WriteLine($"Container exit code: {result.ExitCode}");
+            _output.WriteLine($"Container output:\n{result.Output}");
+
+            result.ExitCode.Should().Be(0, "Agent should successfully load Azure AI Foundry credentials");
+            result.Output.Should().Contain("Azure AI Foundry connection established", 
+                "Agent should report successful Azure AI Foundry connection");
+        }
+        finally
+        {
+            if (File.Exists(tempEventFile))
+            {
+                File.Delete(tempEventFile);
+            }
+        }
+    }
+
     private async Task BuildDockerImage()
     {
         _output.WriteLine("Building Docker image for integration tests...");
@@ -253,6 +304,74 @@ public class DockerContainerIntegrationTests
         {
             envVars.Add("-e");
             envVars.Add($"GITHUB_API_URL={apiUrl}");
+        }
+
+        // Build full create command
+        var createArgs = new List<string> { "create", "--name", containerId };
+        createArgs.AddRange(envVars);
+        createArgs.Add(_imageName);
+        
+        // First, create the container
+        var createResult = await RunDockerCommand(createArgs.ToArray());
+        
+        if (createResult.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"Failed to create container: {createResult.Output}");
+        }
+
+        // Copy the event file into the container
+        var copyResult = await RunDockerCommand("cp", eventFilePath, $"{containerId}:/tmp/event.json");
+        if (copyResult.ExitCode != 0)
+        {
+            await RunDockerCommand("rm", "-f", containerId); // Cleanup
+            throw new InvalidOperationException($"Failed to copy event file: {copyResult.Output}");
+        }
+
+        // Start the container
+        var startResult = await RunDockerCommand("start", "-a", containerId);
+        
+        // Remove the container
+        await RunDockerCommand("rm", "-f", containerId);
+        
+        return (startResult.ExitCode, startResult.Output);
+    }
+
+    private async Task<(int ExitCode, string Output)> RunDockerContainerWithAzureFoundry(
+        string token, 
+        string repo, 
+        string eventFilePath,
+        string azureEndpoint,
+        string azureApiKey,
+        string? modelDeployment = null,
+        string? apiVersion = null)
+    {
+        var containerId = Guid.NewGuid().ToString("N")[..12];
+        
+        // Build environment variables list
+        var envVars = new List<string>
+        {
+            "-e", $"INPUT_GITHUB_TOKEN={token}",
+            "-e", $"GITHUB_TOKEN={token}",
+            "-e", $"GITHUB_REPOSITORY={repo}",
+            "-e", "GITHUB_EVENT_NAME=issues",
+            "-e", "GITHUB_EVENT_PATH=/tmp/event.json",
+            "-e", $"GITHUB_RUN_ID=test-run-{Guid.NewGuid():N}",
+            "-e", "INPUT_COMMENTS_PAGE_SIZE=5",
+            // Azure AI Foundry credentials as INPUT_ variables (mimicking GitHub Actions)
+            "-e", $"INPUT_AZURE_AI_FOUNDRY_ENDPOINT={azureEndpoint}",
+            "-e", $"INPUT_AZURE_AI_FOUNDRY_API_KEY={azureApiKey}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(modelDeployment))
+        {
+            envVars.Add("-e");
+            envVars.Add($"INPUT_AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT={modelDeployment}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(apiVersion))
+        {
+            envVars.Add("-e");
+            envVars.Add($"INPUT_AZURE_AI_FOUNDRY_API_VERSION={apiVersion}");
         }
 
         // Build full create command

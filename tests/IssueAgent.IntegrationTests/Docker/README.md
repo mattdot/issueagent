@@ -8,6 +8,9 @@ These integration tests validate the complete IssueAgent Docker container agains
 2. **Environment Variables** must be set:
    - `TEST_PAT`: A GitHub Personal Access Token with `repo` scope
    - `TEST_REPO`: A repository in `owner/repo` format that the PAT has access to
+3. **Optional Environment Variables** for Azure AI Foundry tests:
+   - `TEST_AZURE_AI_FOUNDRY_ENDPOINT`: Azure AI Foundry endpoint URL
+   - `TEST_AZURE_AI_FOUNDRY_API_KEY`: Azure AI Foundry API key
 
 ## Running the Tests
 
@@ -54,6 +57,13 @@ The tests automatically skip if `TEST_PAT` or `TEST_REPO` are not set, making th
 - Validates `GITHUB_GRAPHQL_URL` environment variable is respected
 - Useful for GitHub Enterprise Server deployments
 - Confirms the agent works with custom API endpoints
+
+### 5. `DockerContainer_ShouldLoadAzureAIFoundryCredentials_FromActionInputs`
+- Tests Azure AI Foundry credential loading in Docker
+- Validates `INPUT_AZURE_AI_FOUNDRY_ENDPOINT` and `INPUT_AZURE_AI_FOUNDRY_API_KEY` environment variables
+- Confirms the fix for the environment variable naming mismatch (issue #27)
+- Verifies the agent successfully connects to Azure AI Foundry when credentials are provided
+- **Requires**: `TEST_AZURE_AI_FOUNDRY_ENDPOINT` and `TEST_AZURE_AI_FOUNDRY_API_KEY` environment variables
 
 ## Test Architecture
 
