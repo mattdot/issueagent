@@ -11,7 +11,7 @@ namespace IssueAgent.IntegrationTests.AzureAIFoundry;
 /// </summary>
 public class ConnectionTests
 {
-    [Fact(Skip = "Integration test - requires Azure AI Foundry endpoint")]
+    [Fact]
     public async Task SuccessfulConnection_WithValidCredentials_ShouldConnect()
     {
         // Arrange
@@ -55,7 +55,7 @@ public class ConnectionTests
         Assert.Equal(ConnectionErrorCategory.MissingConfiguration, result.ErrorCategory);
     }
 
-    [Fact(Skip = "Integration test - requires network access")]
+    [Fact(Skip = "Requires a fake/invalid endpoint that returns authentication errors - hardcoded test endpoint may not behave as expected")]
     public async Task InvalidApiKey_ShouldFailWithAuthenticationError()
     {
         // Arrange
@@ -101,7 +101,7 @@ public class ConnectionTests
         Assert.Equal(ConnectionErrorCategory.InvalidConfiguration, result.ErrorCategory);
     }
 
-    [Fact(Skip = "Integration test - requires network access")]
+    [Fact(Skip = "Requires specific model deployment setup - test model may exist on real endpoint")]
     public async Task ModelDeploymentNotFound_ShouldFailWithClearError()
     {
         // Arrange
@@ -126,7 +126,7 @@ public class ConnectionTests
         Assert.Equal(ConnectionErrorCategory.ModelNotFound, result.ErrorCategory);
     }
 
-    [Fact(Skip = "Integration test - requires network access")]
+    [Fact(Skip = "Network timeout test requires unreachable endpoint - may not behave consistently")]
     public async Task NetworkTimeout_ShouldFailAfter30Seconds()
     {
         // Arrange

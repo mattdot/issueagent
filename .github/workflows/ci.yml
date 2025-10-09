@@ -37,6 +37,6 @@ jobs:
 
       - name: Test
         env:
-          AZURE_AI_FOUNDRY_ENDPOINT: ${{ secrets.AZURE_AI_FOUNDRY_ENDPOINT }}
-          AZURE_AI_FOUNDRY_API_KEY: ${{ secrets.AZURE_AI_FOUNDRY_API_KEY }}
+          AZURE_AI_FOUNDRY_ENDPOINT: ${{ vars.ISSUE_AGENT_ENDPOINT }}
+          AZURE_AI_FOUNDRY_API_KEY: ${{ secrets.ISSUE_AGENT_KEY }}
         run: dotnet test --configuration Release --no-build --verbosity normal
