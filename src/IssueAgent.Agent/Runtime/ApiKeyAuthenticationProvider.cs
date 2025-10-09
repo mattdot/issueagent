@@ -45,8 +45,9 @@ public class ApiKeyAuthenticationProvider : IAzureAIFoundryAuthenticationProvide
         // Azure AI Foundry requires the API key to be sent in the "api-key" header, not as a bearer token
         var options = new PersistentAgentsAdministrationClientOptions();
 
-        // Add our custom policy to inject the api-key header
-        options.AddPolicy(new ApiKeyAuthenticationPolicy(_apiKey), HttpPipelinePosition.PerCall);
+        // Add our custom policy to inject the api-key header and remove the Authorization header
+        // Use BeforeTransport to ensure this runs after all other policies (including bearer token auth)
+        options.AddPolicy(new ApiKeyAuthenticationPolicy(_apiKey), HttpPipelinePosition.BeforeTransport);
 
         // Use a no-op TokenCredential since we're handling auth via the custom policy
         var credential = new NoOpTokenCredential();
