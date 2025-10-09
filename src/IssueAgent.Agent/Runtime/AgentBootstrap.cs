@@ -356,7 +356,7 @@ public static class AgentBootstrap
     private static AzureAIFoundryConfiguration? LoadAzureAIFoundryConfiguration()
     {
         // Check if Azure AI Foundry is configured (endpoint is the required field)
-        var endpoint = Environment.GetEnvironmentVariable("INPUT_AZURE_FOUNDRY_ENDPOINT")
+        var endpoint = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_ENDPOINT")
             ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_ENDPOINT");
 
         if (string.IsNullOrWhiteSpace(endpoint))
@@ -365,16 +365,16 @@ public static class AgentBootstrap
             return null;
         }
 
-        var apiKey = Environment.GetEnvironmentVariable("INPUT_AZURE_FOUNDRY_API_KEY")
+        var apiKey = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_KEY")
             ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_KEY")
             ?? throw new InvalidOperationException(
                 "Azure AI Foundry API key is required when endpoint is provided. " +
-                "Set 'azure_foundry_api_key' input or AZURE_AI_FOUNDRY_API_KEY environment variable.");
+                "Set 'azure_ai_foundry_api_key' input or AZURE_AI_FOUNDRY_API_KEY environment variable.");
 
-        var modelDeployment = Environment.GetEnvironmentVariable("INPUT_AZURE_FOUNDRY_MODEL_DEPLOYMENT")
+        var modelDeployment = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT")
             ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_MODEL_DEPLOYMENT");
 
-        var apiVersion = Environment.GetEnvironmentVariable("INPUT_AZURE_FOUNDRY_API_VERSION")
+        var apiVersion = Environment.GetEnvironmentVariable("INPUT_AZURE_AI_FOUNDRY_API_VERSION")
             ?? Environment.GetEnvironmentVariable("AZURE_AI_FOUNDRY_API_VERSION");
 
         return new AzureAIFoundryConfiguration
